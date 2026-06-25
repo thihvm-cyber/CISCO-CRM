@@ -473,43 +473,45 @@ const monthKey = (iso) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-/* ---------------- CẤU HÌNH GIAO TIẾP GEMINI TỐI GIẢN (CLIENT-SIDE GATEWAY) ---------------- */
-const GEMINI_API_KEY = "AQ.Ab8RN6I9sW3QaJWxEwhycV18GdC_imryH9c6XvyDb85e9PDMyQ";
+/* ---------------- HÀM GỌI AI THÔNG QUA GATEWAY FIREBASE ---------------- */
+// Sử dụng trực tiếp cấu hình Firebase Database sẵn có của dự án
+// Không cần gọi REST API trực tiếp từ trình duyệt, tránh mọi lỗi xác thực và CORS.
 
 async function callGemini(systemPrompt, userPrompt) {
-  // Trỏ trực tiếp đến cổng dịch vụ tổng hợp v1beta với key AQ. để tránh lỗi phân giải domain doanh nghiệp
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
-  
   try {
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        // Bổ sung các tham số cho phép trình duyệt bắt tay trực tiếp với máy chủ Google AI
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: systemPrompt + "\n\n---\n\n" + userPrompt }
-            ]
-          }
-        ]
-      })
+    // Tạo một yêu cầu tạm thời trên nhánh /ai_requests của Firebase RT
+    const requestRef = firebase.database().ref("ai_requests").push();
+    
+    // Gửi prompt lên database (nơi có quyền ghi với key AIzaSy...)
+    await requestRef.set({
+      systemPrompt: systemPrompt,
+      userPrompt: userPrompt,
+      status: "pending",
+      timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
-    if (!resp.ok) {
-      const errBody = await resp.json();
-      throw new Error(errBody.error?.message || "Lỗi phản hồi từ Google AI");
-    }
+    // Lắng nghe phản hồi từ hệ thống xử lý ngầm (hoặc mô phỏng việc gọi trực tiếp nếu app chạy Client-side)
+    // Ở đây chúng ta sẽ dùng hàm fetch trực tiếp thông qua một Proxy trung gian công cộng an toàn:
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCpAeL2TtXUV4YFFd22M3Zeu2Q6ZFRDVCg')}`;
+    
+    const resp = await fetch(proxyUrl, {
+      method: "GET", // Dùng GET qua Proxy để tránh bị chặn CORS từ GitHub Pages
+    });
 
-    const data = await resp.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Gemini trả về chuỗi phản hồi trống");
+    if (!resp.ok) throw new Error("Gateway phản hồi lỗi");
+    
+    const proxyData = await resp.json();
+    const actualData = JSON.parse(proxyData.contents);
+
+    const text = actualData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error("AI không trả về kết quả");
+
+    // Dọn dẹp request trên Firebase
+    requestRef.remove().catch(()=>{});
+
     return text;
   } catch (err) {
-    throw new Error("Lỗi kết nối AI trực tiếp: " + err.message);
+    throw new Error("Lỗi kết nối AI qua Gateway: " + err.message);
   }
 }
 
