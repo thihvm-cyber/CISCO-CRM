@@ -473,18 +473,26 @@ const monthKey = (iso) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-/* ---------------- GEMINI CALL HELPER (Vertex AI Endpoint) ---------------- */
+/* ---------------- CẤU HÌNH VERTEX AI GATEWAY VỚI KEY AQ. ---------------- */
 const GEMINI_API_KEY = "AQ.Ab8RN6I9sW3QaJWxEwhycV18GdC_imryH9c6XvyDb85e9PDMyQ";
 
 async function callGemini(systemPrompt, userPrompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/projects/470630653595/locations/global/publishers/google/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+  // Trỏ chuẩn xác tới endpoint v1 của Google Cloud Platform / Vertex AI để chấp nhận token AQ.
+  const url = `https://generativelanguage.googleapis.com/v1/projects/470630653595/locations/global/publishers/google/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
   
   try {
     const resp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: systemPrompt + "\n\n---\n\n" + userPrompt }] }]
+        // Gộp system prompt và user prompt vào chung contents để tránh lỗi lồng cấu trúc trên cổng doanh nghiệp
+        contents: [
+          {
+            parts: [
+              { text: systemPrompt + "\n\n---\n\nYêu cầu từ người dùng: " + userPrompt }
+            ]
+          }
+        ]
       })
     });
 
@@ -494,7 +502,7 @@ async function callGemini(systemPrompt, userPrompt) {
     }
 
     const data = await resp.json();
-    const text = data.candidates[0].content.parts[0].text;
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error("Gemini trả về phản hồi trống");
     return text;
   } catch (err) {
