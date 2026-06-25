@@ -473,23 +473,26 @@ const monthKey = (iso) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-/* ---------------- CẤU HÌNH VERTEX AI GATEWAY VỚI KEY AQ. ---------------- */
+/* ---------------- CẤU HÌNH GIAO TIẾP GEMINI TỐI GIẢN (CLIENT-SIDE GATEWAY) ---------------- */
 const GEMINI_API_KEY = "AQ.Ab8RN6I9sW3QaJWxEwhycV18GdC_imryH9c6XvyDb85e9PDMyQ";
 
 async function callGemini(systemPrompt, userPrompt) {
-  // Trỏ chuẩn xác tới endpoint v1 của Google Cloud Platform / Vertex AI để chấp nhận token AQ.
-  const url = `https://generativelanguage.googleapis.com/v1/projects/470630653595/locations/global/publishers/google/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+  // Trỏ trực tiếp đến cổng dịch vụ tổng hợp v1beta với key AQ. để tránh lỗi phân giải domain doanh nghiệp
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
   
   try {
     const resp = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        // Bổ sung các tham số cho phép trình duyệt bắt tay trực tiếp với máy chủ Google AI
+        "Accept": "application/json"
+      },
       body: JSON.stringify({
-        // Gộp system prompt và user prompt vào chung contents để tránh lỗi lồng cấu trúc trên cổng doanh nghiệp
         contents: [
           {
             parts: [
-              { text: systemPrompt + "\n\n---\n\nYêu cầu từ người dùng: " + userPrompt }
+              { text: systemPrompt + "\n\n---\n\n" + userPrompt }
             ]
           }
         ]
@@ -498,15 +501,15 @@ async function callGemini(systemPrompt, userPrompt) {
 
     if (!resp.ok) {
       const errBody = await resp.json();
-      throw new Error(errBody.error?.message || "Lỗi API Gemini");
+      throw new Error(errBody.error?.message || "Lỗi phản hồi từ Google AI");
     }
 
     const data = await resp.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Gemini trả về phản hồi trống");
+    if (!text) throw new Error("Gemini trả về chuỗi phản hồi trống");
     return text;
   } catch (err) {
-    throw new Error("Lỗi kết nối AI: " + err.message);
+    throw new Error("Lỗi kết nối AI trực tiếp: " + err.message);
   }
 }
 
