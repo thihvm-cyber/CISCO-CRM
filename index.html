@@ -473,7 +473,6 @@ const monthKey = (iso) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-/* ---------------- GEMINI CALL HELPER (Sửa chuẩn v1beta payload & JSON) ---------------- */
 const GEMINI_API_KEY = "AQ.Ab8RN6JoTPv9doryc4ZQtOLCexduCQQItlSp-31YgifdX8q0xQ"; 
 
 async function callGemini(systemPrompt, userPrompt) {
@@ -484,8 +483,12 @@ async function callGemini(systemPrompt, userPrompt) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\n---\n\n" + userPrompt }] }],
-        // Bỏ generationConfig có responseMimeType gây lỗi, chỉ cần ép bằng prompt văn bản
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          response_mime_type: "application/json"
+        }
       })
     });
 
@@ -495,14 +498,13 @@ async function callGemini(systemPrompt, userPrompt) {
     }
 
     const data = await resp.json();
-    const text = data.candidates[0].content.parts[0].text;
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error("Gemini trả về phản hồi trống");
     return text;
   } catch (err) {
     throw new Error("Lỗi kết nối AI: " + err.message);
   }
 }
-
 function parseJSONLoose(text) {
   let clean = text.trim().replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
   try { return JSON.parse(clean); } catch (e) {
