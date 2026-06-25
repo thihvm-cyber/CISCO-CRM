@@ -473,22 +473,18 @@ const monthKey = (iso) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-const GEMINI_API_KEY = "AQ.Ab8RN6I9sW3QaJWxEwhycV18GdC_imryH9c6XvyDb85e9PDMyQ"; 
+/* ---------------- GEMINI CALL HELPER (Vertex AI Endpoint) ---------------- */
+const GEMINI_API_KEY = "AQ.Ab8RN6I9sW3QaJWxEwhycV18GdC_imryH9c6XvyDb85e9PDMyQ";
 
 async function callGemini(systemPrompt, userPrompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/projects/470630653595/locations/global/publishers/google/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
   
   try {
     const resp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          response_mime_type: "application/json"
-        }
+        contents: [{ parts: [{ text: systemPrompt + "\n\n---\n\n" + userPrompt }] }]
       })
     });
 
@@ -498,13 +494,14 @@ async function callGemini(systemPrompt, userPrompt) {
     }
 
     const data = await resp.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = data.candidates[0].content.parts[0].text;
     if (!text) throw new Error("Gemini trả về phản hồi trống");
     return text;
   } catch (err) {
     throw new Error("Lỗi kết nối AI: " + err.message);
   }
 }
+
 function parseJSONLoose(text) {
   let clean = text.trim().replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
   try { return JSON.parse(clean); } catch (e) {
@@ -554,7 +551,6 @@ function InputPage({ customers, notify }) {
 
   const resetForm = () => { setForm({ company: "", industry: INDUSTRIES[0], product: PRODUCTS[0], stage: STAGES[0], value: "", note: "", date: new Date().toISOString().slice(0, 10) }); setEditingId(null); };
 
-  /* Gửi yêu cầu trích xuất JSON thuần văn bản qua Gemini */
   const processTranscriptWithAI = async (rawText, attempt = 1) => {
     if (!rawText || rawText.trim().length < 8) return;
     setAiProcessing(true);
@@ -608,15 +604,14 @@ Trả về chuẩn định dạng JSON duy nhất, không giải thích gì thê
   const transcriptRef = useRef("");
   const silenceTimerRef = useRef(null);
   
-  /* Cải thiện Speech to Text (Tối ưu hóa độ nhạy nhận diện của trình duyệt) */
   const startRecording = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { setRecError("Trình duyệt không hỗ trợ ghi âm. Hãy dùng Chrome hoặc Edge."); return; }
     setRecError("");
     const rec = new SR();
     rec.lang = "vi-VN";
-    rec.continuous = true; // Cho phép thu âm liên tục không bị gián đoạn
-    rec.interimResults = true; // Trả kết quả trực tiếp để hiển thị real-time
+    rec.continuous = true;
+    rec.interimResults = true;
     let finalTranscript = "";
     const resetSilenceTimer = () => {
       clearTimeout(silenceTimerRef.current);
