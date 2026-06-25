@@ -155,6 +155,15 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
+// BẬT TÍNH NĂNG TẢI TRANG SIÊU TỐC (OFFLINE PERSISTENCE)
+db.enablePersistence().catch((err) => {
+  if (err.code === 'failed-precondition') {
+    console.warn("Tính năng lưu ngầm chỉ chạy ở 1 tab duy nhất.");
+  } else if (err.code === 'unimplemented') {
+    console.warn("Trình duyệt không hỗ trợ lưu ngầm.");
+  }
+});
+
 /* ---------------- Lightweight SVG chart components (no external deps) ---------------- */
 function useContainerWidth() {
   const ref = useRef(null);
