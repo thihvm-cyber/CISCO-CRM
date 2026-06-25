@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
   :root{
@@ -134,37 +134,41 @@
     .content{padding:18px;}
   }
 </style>
+<script>
+  window.addEventListener('error', function(e){
+    var root = document.getElementById('root');
+    if (root && !root.dataset.mounted) {
+      var msg = (e && e.message) ? e.message : 'Lỗi không xác định';
+      var src = (e && e.filename) ? e.filename : '';
+      root.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0B1320;color:#EAF1FB;font-family:sans-serif;padding:24px;text-align:center;">' +
+        '<div><div style="font-size:15px;font-weight:600;margin-bottom:8px;">Lỗi tải trang</div>' +
+        '<div style="font-size:13px;color:#AEC0DC;max-width:480px;">' + msg + (src ? ('<br><span style="font-size:11px;color:#6E84A8;">' + src + '</span>') : '') + '</div></div></div>';
+    }
+  }, true);
+</script>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
-/* ---------------- CẤU HÌNH FIREBASE ---------------- */
+/* ---------------- CẤU HÌNH FIREBASE REALTIME DATABASE ---------------- */
 const firebaseConfig = {
-  apiKey: "AIzaSyCpAeL2TtXUV4YFFd22M3Zeu2Q6ZFRDVCg",
-  authDomain: "cisco-crm.firebaseapp.com",
-  projectId: "cisco-crm",
-  storageBucket: "cisco-crm.firebasestorage.app",
-  messagingSenderId: "983212214414",
-  appId: "1:983212214414:web:9f57f8fba8cdf2c8e621df"
+  apiKey: "AIzaSyDyPtbiBsvJRALiZsGTbXnRvHkT5_7fW8",
+  authDomain: "mien-trung-chay-nang-2026.firebaseapp.com",
+  databaseURL: "https://mien-trung-chay-nang-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mien-trung-chay-nang-2026",
+  storageBucket: "mien-trung-chay-nang-2026.firebasestorage.app",
+  messagingSenderId: "455098963218",
+  appId: "1:455098963218:web:b187181effa61a452d4fcb"
 };
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-const db = firebase.firestore();
+const dbRT = firebase.database().ref("customers");
 
-// BẬT TÍNH NĂNG TẢI TRANG SIÊU TỐC (OFFLINE PERSISTENCE)
-db.enablePersistence().catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn("Tính năng lưu ngầm chỉ chạy ở 1 tab duy nhất.");
-  } else if (err.code === 'unimplemented') {
-    console.warn("Trình duyệt không hỗ trợ lưu ngầm.");
-  }
-});
-
-/* ---------------- Lightweight SVG chart components (no external deps) ---------------- */
+// Các hàm chart SVGs rút gọn không đổi
 function useContainerWidth() {
   const ref = useRef(null);
   const [width, setWidth] = useState(600);
@@ -245,16 +249,13 @@ function BarChartSVG({ data, height = 260, colorFor, layout = "vertical", angled
   if (layout === "horizontal") {
     const padL = 130, padR = 20, padT = 10, padB = 10;
     const innerW = Math.max(10, width - padL - padR);
-    const rowH = 30;
-    const innerH = data.length * rowH;
+    const rowH = 30; const innerH = data.length * rowH;
     const maxV = niceMax(Math.max(...data.map(d => d.value), 1));
     return (
       <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
         <svg width="100%" height={innerH + padT + padB} viewBox={`0 0 ${width} ${innerH + padT + padB}`}>
           {data.map((d, i) => {
-            const y = padT + i * rowH;
-            const w = (d.value / maxV) * innerW;
-            const c = colorFor ? colorFor(d.name, i) : "#2DD4BF";
+            const y = padT + i * rowH; const w = (d.value / maxV) * innerW; const c = colorFor ? colorFor(d.name, i) : "#2DD4BF";
             return (
               <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
                 <text x={padL - 10} y={y + rowH / 2 + 4} fill="#AEC0DC" fontSize="11.5" textAnchor="end">{d.name}</text>
@@ -272,9 +273,7 @@ function BarChartSVG({ data, height = 260, colorFor, layout = "vertical", angled
   const innerW = Math.max(10, width - padL - padR);
   const innerH = height - padT - padB;
   const maxV = niceMax(Math.max(...data.map(d => d.value), 1));
-  const n = data.length;
-  const slot = innerW / n;
-  const barW = Math.min(46, slot * 0.55);
+  const n = data.length; const slot = innerW / n; const barW = Math.min(46, slot * 0.55);
   return (
     <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
@@ -282,9 +281,7 @@ function BarChartSVG({ data, height = 260, colorFor, layout = "vertical", angled
         <text x={8} y={padT + 4} fill="#6E84A8" fontSize="11">{maxV}</text>
         <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
         {data.map((d, i) => {
-          const cx = padL + slot * i + slot / 2;
-          const h = (d.value / maxV) * innerH;
-          const c = colorFor ? colorFor(d.name, i) : "#2DD4BF";
+          const cx = padL + slot * i + slot / 2; const h = (d.value / maxV) * innerH; const c = colorFor ? colorFor(d.name, i) : "#2DD4BF";
           return (
             <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
               <rect x={cx - barW / 2} y={padT + innerH - h} width={barW} height={Math.max(1, h)} fill={c} rx="5" opacity={hover === i ? 1 : 0.92} />
@@ -306,9 +303,7 @@ function StackedBarChartSVG({ data, series, height = 260 }) {
   const innerH = height - padT - padB;
   const totals = data.map(d => series.reduce((s, sr) => s + (d[sr.key] || 0), 0));
   const maxV = niceMax(Math.max(...totals, 1));
-  const n = data.length;
-  const slot = innerW / n;
-  const barW = Math.min(46, slot * 0.55);
+  const n = data.length; const slot = innerW / n; const barW = Math.min(46, slot * 0.55);
   return (
     <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
@@ -316,14 +311,11 @@ function StackedBarChartSVG({ data, series, height = 260 }) {
         <text x={8} y={padT + 4} fill="#6E84A8" fontSize="11">{maxV}</text>
         <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
         {data.map((d, i) => {
-          const cx = padL + slot * i + slot / 2;
-          let yCursor = padT + innerH;
+          const cx = padL + slot * i + slot / 2; let yCursor = padT + innerH;
           return (
             <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
               {series.map((sr, si) => {
-                const v = d[sr.key] || 0;
-                const h = (v / maxV) * innerH;
-                yCursor -= h;
+                const v = d[sr.key] || 0; const h = (v / maxV) * innerH; yCursor -= h;
                 return <rect key={si} x={cx - barW / 2} y={yCursor} width={barW} height={Math.max(0, h)} fill={sr.color} rx={si === series.length - 1 ? 4 : 0} opacity={hover === i ? 1 : 0.92} />;
               })}
               <text x={cx} y={padT + innerH + 18} fill="#6E84A8" fontSize="10.5" textAnchor="middle">{d.month}</text>
@@ -344,12 +336,9 @@ function MultiLineChartSVG({ data, series, height = 300 }) {
   const [hover, setHover] = useState(null);
   const padL = 38, padR = 14, padT = 16, padB = 30;
   const innerW = Math.max(10, width - padL - padR);
-  const innerH = height - padT - padB;
-  const n = data.length;
-  let maxV = 1;
-  series.forEach(sr => data.forEach(d => { if ((d[sr.key] || 0) > maxV) maxV = d[sr.key]; }));
-  maxV = niceMax(maxV);
-  const stepX = n > 1 ? innerW / (n - 1) : 0;
+  const innerH = height - padT - padB; const n = data.length;
+  let maxV = 1; series.forEach(sr => data.forEach(d => { if ((d[sr.key] || 0) > maxV) maxV = d[sr.key]; }));
+  maxV = niceMax(maxV); const stepX = n > 1 ? innerW / (n - 1) : 0;
   return (
     <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
@@ -358,7 +347,7 @@ function MultiLineChartSVG({ data, series, height = 300 }) {
         <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
         {series.map((sr, si) => {
           const pts = data.map((d, i) => ({ x: padL + stepX * i, y: padT + innerH - ((d[sr.key] || 0) / maxV) * innerH }));
-          const path = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+          const path = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.py.toFixed(1)).join(" ");
           return <path key={si} d={path} fill="none" stroke={sr.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity="0.95" />;
         })}
         {data.map((d, i) => <rect key={i} x={padL + stepX * i - stepX / 2} y={padT} width={stepX || 20} height={innerH} fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }} />)}
@@ -375,23 +364,16 @@ function MultiLineChartSVG({ data, series, height = 300 }) {
 
 function PieChartSVG({ data, colors, height = 280 }) {
   const [hover, setHover] = useState(null);
-  const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  const size = Math.min(height, 280);
-  const cx = size / 2, cy = size / 2, rOuter = size * 0.38, rInner = size * 0.23;
-  let angle = -90;
+  const total = data.reduce((s, d) => s + d.value, 0) || 1; const size = Math.min(height, 280);
+  const cx = size / 2, cy = size / 2, rOuter = size * 0.38, rInner = size * 0.23; let angle = -90;
   const slices = data.map((d, i) => {
-    const frac = d.value / total;
-    const startAngle = angle;
-    const endAngle = angle + frac * 360;
-    angle = endAngle;
+    const frac = d.value / total; const startAngle = angle; const endAngle = angle + frac * 360; angle = endAngle;
     return { ...d, startAngle, endAngle, color: colors[i % colors.length] };
   });
   const polarToCart = (r, a) => { const rad = (a * Math.PI) / 180; return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)]; };
   const arcPath = (s) => {
-    const [x1, y1] = polarToCart(rOuter, s.startAngle);
-    const [x2, y2] = polarToCart(rOuter, s.endAngle);
-    const [x3, y3] = polarToCart(rInner, s.endAngle);
-    const [x4, y4] = polarToCart(rInner, s.startAngle);
+    const [x1, y1] = polarToCart(rOuter, s.startAngle); const [x2, y2] = polarToCart(rOuter, s.endAngle);
+    const [x3, y3] = polarToCart(rInner, s.endAngle); const [x4, y4] = polarToCart(rInner, s.startAngle);
     const largeArc = s.endAngle - s.startAngle > 180 ? 1 : 0;
     return `M${x1},${y1} A${rOuter},${rOuter} 0 ${largeArc} 1 ${x2},${y2} L${x3},${y3} A${rInner},${rInner} 0 ${largeArc} 0 ${x4},${y4} Z`;
   };
@@ -415,16 +397,10 @@ function PieChartSVG({ data, colors, height = 280 }) {
 }
 
 function RadarChartSVG({ data, height = 300, color = "#2DD4BF" }) {
-  const size = Math.min(height, 300);
-  const cx = size / 2, cy = size / 2, r = size * 0.34;
-  const maxV = niceMax(Math.max(...data.map(d => d.value), 1));
-  const n = data.length || 1;
+  const size = Math.min(height, 300); const cx = size / 2, cy = size / 2, r = size * 0.34;
+  const maxV = niceMax(Math.max(...data.map(d => d.value), 1)); const n = data.length || 1;
   const angleStep = (Math.PI * 2) / n;
-  const pointFor = (i, value) => {
-    const a = -Math.PI / 2 + angleStep * i;
-    const rad = (value / maxV) * r;
-    return [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
-  };
+  const pointFor = (i, value) => { const a = -Math.PI / 2 + angleStep * i; const rad = (value / maxV) * r; return [cx + rad * Math.cos(a), cy + rad * Math.sin(a)]; };
   const polygonFor = (frac) => data.map((d, i) => pointFor(i, maxV * frac).join(",")).join(" ");
   const dataPolygon = data.map((d, i) => pointFor(i, d.value).join(",")).join(" ");
   return (
@@ -443,15 +419,20 @@ function RadarChartSVG({ data, height = 300, color = "#2DD4BF" }) {
   );
 }
 
-/* ---------------- Constants ---------------- */
 const PRODUCTS = ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"];
 const STAGES = ["Tiếp cận", "Liên hệ", "Demo", "Đề xuất/Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"];
-const STAGE_COLORS = { "Tiếp cận": "#6E84A8", "Liên hệ": "#818CF8", "Demo": "#2DD4BF", "Đề xuất/Báo giá": "#F5A524", "Đàm phán": "#FB923C", "Ký hợp đồng": "#34D399", "Mất khách": "#FB7185" };
+const STAGE_COLORS = {
+  "Tiếp cận": "#6E84A8", "Liên hệ": "#818CF8", "Demo": "#2DD4BF",
+  "Đề xuất/Báo giá": "#F5A524", "Đàm phán": "#FB923C", "Ký hợp đồng": "#34D399", "Mất khách": "#FB7185"
+};
 const INDUSTRIES = ["Bán lẻ", "Tài chính/Ngân hàng", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
 
 const NAV = [
-  { id: "input", label: "Nhập liệu", icon: "✎" }, { id: "dashboard", label: "Dashboard", icon: "▤" },
-  { id: "trends", label: "Xu hướng", icon: "∼" }, { id: "deepdive", label: "Deep-dive", icon: "◎" }, { id: "ai", label: "Gợi ý AI", icon: "✦" }
+  { id: "input", label: "Nhập liệu", icon: "✎" },
+  { id: "dashboard", label: "Dashboard", icon: "▤" },
+  { id: "trends", label: "Xu hướng", icon: "∼" },
+  { id: "deepdive", label: "Deep-dive", icon: "◎" },
+  { id: "ai", label: "Gợi ý AI", icon: "✦" }
 ];
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -462,18 +443,15 @@ const fmtVND = (n) => {
   return n.toLocaleString("vi-VN");
 };
 const fmtDate = (iso) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
+  if (!iso) return "—"; const d = new Date(iso);
   return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 const monthKey = (iso) => {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
-/* ---------------- API CALL GEMINI ---------------- */
-// DÁN MÃ API KEY CỦA BẠN VÀO GIỮA 2 DẤU NGOẶC KÉP Ở DÒNG DƯỚI ĐÂY (Xóa chữ MÃ_CỦA_BẠN_Ở_ĐÂY)
-const GEMINI_API_KEY = "AQ.Ab8RN6KsyfZrOyazjpEwNmS9xlRBimHgpqLThNCZwUq5MvM7kw"; 
+// API Key Gemini (cập nhật v1)
+const GEMINI_API_KEY = "AQ.Ab8RN6KsyfZrOyazjpEwNmS9xlRBimHgpqLThNCZwUq5MvM7kw";
 
 async function callGemini(systemPrompt, userPrompt) {
   const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -487,8 +465,7 @@ async function callGemini(systemPrompt, userPrompt) {
       })
     });
     if (!resp.ok) {
-      const errBody = await resp.json();
-      throw new Error(errBody.error?.message || "Lỗi API Gemini");
+      const errBody = await resp.json(); throw new Error(errBody.error?.message || "Lỗi API Gemini");
     }
     const data = await resp.json();
     const text = data.candidates[0].content.parts[0].text;
@@ -564,12 +541,8 @@ Trả về chuẩn JSON: {"cleaned_note": "...", "company": "...", "industry": "
       
       const text = await callGemini(system, `Bản ghi âm gốc:\n"${rawText}"`);
       const parsed = parseJSONLoose(text);
-      
       if (!parsed) throw new Error("Sai định dạng JSON");
-      
-      const filledFields = [];
-      const justFilled = {};
-      
+      const filledFields = []; const justFilled = {};
       setForm(f => {
         const next = { ...f, note: parsed.cleaned_note || f.note };
         if (parsed.company) { next.company = parsed.company; filledFields.push("công ty"); justFilled.company = true; }
@@ -579,70 +552,38 @@ Trả về chuẩn JSON: {"cleaned_note": "...", "company": "...", "industry": "
         if (parsed.value) { next.value = parsed.value; filledFields.push("giá trị deal"); justFilled.value = true; }
         return next;
       });
-      
-      setHighlightFields(justFilled);
-      setTimeout(() => setHighlightFields({}), 2500);
-      setRecError("");
-      
+      setHighlightFields(justFilled); setTimeout(() => setHighlightFields({}), 2500); setRecError("");
       if (filledFields.length > 0) notify(`AI đã điền: ${filledFields.join(", ")}`, "success");
       else notify("AI đã làm sạch ghi chú nhưng không tìm thấy dữ liệu điền tự động", "info");
     } catch (e) {
-      if (attempt < 2) {
-        await new Promise(r => setTimeout(r, 600));
-        return processTranscriptWithAI(rawText, attempt + 1);
-      }
+      if (attempt < 2) { await new Promise(r => setTimeout(r, 600)); return processTranscriptWithAI(rawText, attempt + 1); }
       setRecError("AI xử lý thất bại: " + e.message);
-    } finally {
-      setAiProcessing(false);
-    }
+    } finally { setAiProcessing(false); }
   };
 
-  const transcriptRef = useRef("");
-  const silenceTimerRef = useRef(null);
+  const transcriptRef = useRef(""); const silenceTimerRef = useRef(null);
   const startRecording = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { setRecError("Trình duyệt không hỗ trợ ghi âm. Hãy dùng Chrome hoặc Edge."); return; }
-    setRecError("");
-    const rec = new SR();
-    rec.lang = "vi-VN";
-    rec.continuous = true;
-    rec.interimResults = true;
+    setRecError(""); const rec = new SR(); rec.lang = "vi-VN"; rec.continuous = true; rec.interimResults = true;
     let finalTranscript = "";
     const resetSilenceTimer = () => {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => { if (recognitionRef.current) recognitionRef.current.stop(); }, 3000);
+      clearTimeout(silenceTimerRef.current); silenceTimerRef.current = setTimeout(() => { if (recognitionRef.current) recognitionRef.current.stop(); }, 3000);
     };
     rec.onresult = (e) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + " ";
-        else interim += e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + " "; else interim += e.results[i][0].transcript;
       }
-      transcriptRef.current = (finalTranscript + interim).trim();
-      setForm(f => ({ ...f, note: transcriptRef.current }));
-      resetSilenceTimer();
+      transcriptRef.current = (finalTranscript + interim).trim(); setForm(f => ({ ...f, note: transcriptRef.current })); resetSilenceTimer();
     };
     rec.onerror = (e) => {
-      clearTimeout(silenceTimerRef.current);
-      if (e.error !== "no-speech" && e.error !== "aborted") setRecError("Lỗi ghi âm: " + e.error);
-      setRecording(false);
+      clearTimeout(silenceTimerRef.current); if (e.error !== "no-speech" && e.error !== "aborted") setRecError("Lỗi ghi âm: " + e.error); setRecording(false);
     };
-    rec.onend = () => {
-      clearTimeout(silenceTimerRef.current);
-      setRecording(false);
-      processTranscriptWithAI(transcriptRef.current);
-    };
-    recognitionRef.current = rec;
-    transcriptRef.current = "";
-    rec.start();
-    setRecording(true);
-    resetSilenceTimer();
+    rec.onend = () => { clearTimeout(silenceTimerRef.current); setRecording(false); processTranscriptWithAI(transcriptRef.current); };
+    recognitionRef.current = rec; transcriptRef.current = ""; rec.start(); setRecording(true); resetSilenceTimer();
   };
-  const stopRecording = () => {
-    clearTimeout(silenceTimerRef.current);
-    recognitionRef.current && recognitionRef.current.stop();
-    setRecording(false);
-  };
+  const stopRecording = () => { clearTimeout(silenceTimerRef.current); recognitionRef.current && recognitionRef.current.stop(); setRecording(false); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -650,29 +591,39 @@ Trả về chuẩn JSON: {"cleaned_note": "...", "company": "...", "industry": "
     if (aiProcessing) { notify("AI đang xử lý ghi chú, vui lòng chờ vài giây rồi thử lại", "error"); return; }
     if (!form.company.trim() || !form.note.trim()) { notify("Cần ít nhất Tên công ty và Ghi chú nhu cầu", "error"); return; }
     
-    const rec = { id: editingId || uid(), company: form.company.trim(), industry: form.industry, product: form.product, stage: form.stage, value: form.value ? Number(form.value) : null, note: form.note.trim(), date: new Date(form.date).toISOString(), source: "manual" };
+    const rec = { 
+      company: form.company.trim(), 
+      industry: form.industry, 
+      product: form.product, 
+      stage: form.stage, 
+      value: form.value ? Number(form.value) : null, 
+      note: form.note.trim(), 
+      date: new Date(form.date).toISOString(), 
+      source: "manual" 
+    };
     
     try {
       if (editingId) {
-        await db.collection("customers").doc(editingId).update(rec);
-        notify("Đã cập nhật khách hàng lên Cloud", "success");
+        await dbRT.child(editingId).update(rec);
+        notify("Đã cập nhật khách hàng lên Cloud Real-time", "success");
       } else {
-        await db.collection("customers").doc(rec.id).set(rec);
-        notify("Đã lưu khách hàng mới lên Cloud", "success");
+        const newRef = dbRT.push();
+        await newRef.set(rec);
+        notify("Đã lưu khách hàng mới lên Cloud Real-time", "success");
       }
       resetForm();
     } catch (err) {
-      notify("Lỗi lưu Firebase: " + err.message, "error");
+      notify("Lỗi lưu trữ: " + err.message, "error");
     }
   };
 
   const handleEdit = (c) => { setForm({ company: c.company, industry: c.industry, product: c.product, stage: c.stage, value: c.value || "", note: c.note, date: c.date.slice(0, 10) }); setEditingId(c.id); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const handleDelete = async (id) => {
     try {
-      await db.collection("customers").doc(id).delete();
-      notify("Đã xoá khỏi Cloud", "success");
+      await dbRT.child(id).remove();
+      notify("Đã xoá khỏi Cloud Real-time", "success");
     } catch (err) {
-      notify("Lỗi xoá Firebase: " + err.message, "error");
+      notify("Lỗi xoá: " + err.message, "error");
     }
   };
 
@@ -694,7 +645,7 @@ Trả về chuẩn JSON: {"cleaned_note": "...", "company": "...", "industry": "
       let rawDate = dateKey ? row[dateKey] : null; let isoDate = new Date().toISOString();
       if (rawDate) { const d = new Date(rawDate); if (!isNaN(d.getTime())) isoDate = d.toISOString(); }
       out.push({
-        id: uid(), company: companyKey ? String(row[companyKey] || "Không rõ tên") : "Không rõ tên",
+        company: companyKey ? String(row[companyKey] || "Không rõ tên") : "Không rõ tên",
         industry: industryKey ? String(row[industryKey] || "Khác") : "Khác",
         product: productKey ? String(row[productKey] || PRODUCTS[0]) : PRODUCTS[0],
         stage: stageKey ? String(row[stageKey] || STAGES[0]) : STAGES[0],
@@ -712,13 +663,11 @@ Trả về chuẩn JSON: {"cleaned_note": "...", "company": "...", "industry": "
     
     const uploadBatch = async (rows) => {
       try {
-        const batch = db.batch();
-        rows.forEach(r => {
-          const docRef = db.collection("customers").doc(r.id);
-          batch.set(docRef, r);
-        });
-        await batch.commit();
-        notify(`Đã đồng bộ ${rows.length} khách hàng lên Cloud`, "success");
+        for (const r of rows) {
+          const newRef = dbRT.push();
+          await newRef.set(r);
+        }
+        notify(`Đã đồng bộ ${rows.length} khách hàng lên Cloud Real-time`, "success");
       } catch (err) {
         notify("Lỗi đồng bộ Firebase", "error");
       }
@@ -811,6 +760,7 @@ Trả về chuẩn JSON: {"cleaned_note": "...", "company": "...", "industry": "
   );
 }
 
+// Các trang dashboard, trends, deepdive, ai giữ nguyên
 function DashboardPage({ customers, range, setRange }) {
   const filtered = useMemo(() => filterByRange(customers, range), [customers, range]);
   const kpis = useMemo(() => {
@@ -941,39 +891,49 @@ function AIPage({ customers, notify }) {
 
 function SectionList({ title, items, render }) { return <div className="card"><div className="card-title" style={{ marginBottom: 6 }}>{title}</div>{(!items || items.length === 0) ? <p>Không có dữ liệu</p> : items.map(render)}</div>; }
 function EmptyChart() { return <div className="empty-state" style={{ padding: "40px 20px" }}><p>Chưa có dữ liệu</p></div>; }
-function KpiCard({ label, value, sub, accent }) { return <div className="kpi-card"><div className="kpi-label">{label}</div><div className="kpi-value">{value}</div>{sub && <div className={"kpi-delta" + (accent ? " " + accent : "")}>{sub}</div>}</div>; }
+function KpiCard({ label, value, sub, accent }) { return <div className="kpi-card"><div className="kpi-label">{label}</div><div className="kpi-value">{value}</div></div>; }
 function RangeBar({ range, setRange }) { return <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}><div className="seg-toggle">{[{ k: "3m", l: "3 tháng" }, { k: "all", l: "Tất cả" }].map(o => <button key={o.k} className={"seg-btn" + (range === o.k ? " active" : "")} onClick={() => setRange(o.k)}>{o.l}</button>)}</div></div>; }
 function filterByRange(customers, range) { if (range === "all") return customers; const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 3); return customers.filter(c => new Date(c.date) >= cutoff); }
 function buildMonthlyTrend(customers) { const map = {}; customers.forEach(c => { const k = monthKey(c.date); map[k] = (map[k] || 0) + 1; }); return Object.entries(map).sort().map(([k, v]) => ({ month: `${k.split("-")[1]}/${k.split("-")[0].slice(2)}`, count: v })); }
 
 function App() {
-  const [active, setActive] = useState("input"); const [customers, setCustomers] = useState([]); const [loaded, setLoaded] = useState(false); const [range, setRange] = useState("all"); const [toast, setToast] = useState(null);
+  const [active, setActive] = useState("input"); 
+  const [customers, setCustomers] = useState([]); 
+  const [loaded, setLoaded] = useState(false); 
+  const [range, setRange] = useState("all"); 
+  const [toast, setToast] = useState(null);
   const notify = useCallback((message, type = "info") => setToast({ message, type, key: Date.now() }), []);
   
-  // Firebase Real-time Listener (Tự động tải lại khi có thay đổi)
+  // Trực tiếp kết nối Firebase Real-time, loại bỏ hoàn toàn cơ chế chờ đợi 
   useEffect(() => {
-    const unsubscribe = db.collection("customers").orderBy("date", "desc").onSnapshot(snapshot => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCustomers(data);
+    dbRT.orderByChild("date").on("value", (snapshot) => {
+      const list = [];
+      snapshot.forEach((childSnap) => {
+        list.unshift({ id: childSnap.key, ...childSnap.val() });
+      });
+      setCustomers(list);
       setLoaded(true);
-    }, err => {
-      console.error("Lỗi kết nối Firebase:", err);
-      notify("Lỗi kết nối CSDL Đám mây", "error");
+    }, (error) => {
+      console.error("Lỗi đồng bộ Firebase RT:", error);
+      notify("Lỗi đồng bộ dữ liệu trực tiếp", "error");
       setLoaded(true);
     });
-    return () => unsubscribe();
   }, []);
 
   const pageTitles = { input: ["Nhập liệu", "Thêm khách hàng"], dashboard: ["Dashboard", "Tổng quan"], trends: ["Xu hướng", "Diễn biến nhu cầu"], deepdive: ["Deep-dive", "Chi tiết"], ai: ["Gợi ý AI", "Phân tích bằng Gemini"] };
   const [title, sub] = pageTitles[active];
+  
   return (
     <div className="app-shell">
       <Sidebar active={active} setActive={setActive} count={customers.length} />
       <div className="main">
-        <div className="topbar"><div><h1>{title}</h1><p>{sub}</p></div><div className="pill pill-teal">● Đã kết nối Đám mây (Firebase)</div></div>
+        <div className="topbar">
+          <div><h1>{title}</h1><p>{sub}</p></div>
+          <div className="pill pill-teal">● Đồng bộ Cloud Real-time siêu tốc</div>
+        </div>
         <div className="content">
           <>
-            {active === "input" && <InputPage customers={customers} setCustomers={setCustomers} notify={notify} />}
+            {active === "input" && <InputPage customers={customers} notify={notify} />}
             {active === "dashboard" && <DashboardPage customers={customers} range={range} setRange={setRange} />}
             {active === "trends" && <TrendsPage customers={customers} range={range} setRange={setRange} />}
             {active === "deepdive" && <DeepDivePage customers={customers} />}
