@@ -972,15 +972,13 @@ function App() {
       <div className="main">
         <div className="topbar"><div><h1>{title}</h1><p>{sub}</p></div><div className="pill pill-teal">● Đã kết nối Đám mây (Firebase)</div></div>
         <div className="content">
-          {!loaded ? <div className="empty-state">Đang đồng bộ dữ liệu từ Cloud…</div> : (
-            <>
-              {active === "input" && <InputPage customers={customers} notify={notify} />}
-              {active === "dashboard" && <DashboardPage customers={customers} range={range} setRange={setRange} />}
-              {active === "trends" && <TrendsPage customers={customers} range={range} setRange={setRange} />}
-              {active === "deepdive" && <DeepDivePage customers={customers} />}
-              {active === "ai" && <AIPage customers={customers} notify={notify} />}
-            </>
-          )}
+          <>
+            {active === "input" && <InputPage customers={customers} setCustomers={setCustomers} notify={notify} />}
+            {active === "dashboard" && <DashboardPage customers={customers} range={range} setRange={setRange} />}
+            {active === "trends" && <TrendsPage customers={customers} range={range} setRange={setRange} />}
+            {active === "deepdive" && <DeepDivePage customers={customers} />}
+            {active === "ai" && <AIPage customers={customers} notify={notify} />}
+          </>
         </div>
       </div>
       {toast && <Toast key={toast.key} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
