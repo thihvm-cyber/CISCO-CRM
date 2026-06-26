@@ -301,7 +301,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   function renderCustomers(){
     var data=state.data, h='<div class="card card-purple" style="padding:0; overflow:hidden;">';
     h+='<div style="padding: 1.25rem;"><div class="card-title" style="margin:0;"><span class="card-title-dot dot-purple"></span>Danh sách Pipeline Khách hàng</div></div>';
-    // Đã bổ sung cột Điện thoại và Email
     h+='<div style="overflow-x:auto"><table style="font-size:13px;"><thead><tr><th style="padding-left:1.25rem;">Ngày</th><th>Khách hàng</th><th>Điện thoại</th><th>Email</th><th>Ngành</th><th>Sản phẩm</th><th>Trạng thái</th><th style="text-align:right">Giá trị (VND)</th><th>Ghi chú</th><th style="padding-right:1.25rem;"></th></tr></thead><tbody>';
     
     if (data.customers.length === 0) {
@@ -317,7 +316,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="email" value="'+esc(c.email)+'" placeholder="Email" style="min-width:140px;" /></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="industry" style="min-width:110px">'+selOpts(INDUSTRIES,c.industry)+'</select></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="product" style="min-width:130px">'+selOpts(PRODUCTS,c.product)+'</select></td>';
-      h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="stage" class="badge '+getStatusClass(c.stage)+'" style="width:130px; cursor:pointer; height:auto; padding:4px;">'+selOpts(STAGES,c.stage)+'</select></td>';
+      h+='<td><select data-row="customers" data-id="'+c.id+'" class="badge '+getStatusClass(c.stage)+'" style="width:130px; cursor:pointer; height:auto; padding:4px;">'+selOpts(STAGES,c.stage)+'</select></td>';
       h+='<td style="text-align:right"><input data-row="customers" data-id="'+c.id+'" data-field="value" data-type="number" value="'+(c.value||0)+'" style="min-width:100px;text-align:right;font-weight:600;color:#0369A1;" /></td>';
       h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="note" value="'+esc(c.note)+'" placeholder="Ghi chú thêm" style="min-width:150px;" /></td>';
       h+='<td style="padding-right:1.25rem; text-align:right;"><button class="icon-btn" data-remove="customers" data-id="'+c.id+'">'+icon("trash")+'</button></td></tr>';
@@ -325,6 +324,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     
     h+='</tbody></table></div></div>';
     return h;
+  }
+
+  function fileToGenerativePart(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve({ inlineData: { data: reader.result.split(',')[1], mimeType: file.type } });
+      reader.readAsDataURL(file);
+    });
   }
 
   async function processCustomerWithAI() {
@@ -398,7 +405,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     }
   }
 
-  // BIẾN TOÀN CỤC QUẢN LÝ MIC NGHE LIÊN TỤC
   let recognition = null;
   let isRecording = false;
 
@@ -509,9 +515,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       var emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
       if (emailMatch) parsedEmail = emailMatch[0];
 
-      // BÓC TÁCH ĐIỆN THOẠI (Regex bắt 10-11 số có thể chứa khoảng trắng/dấu chấm)
+      // BÓC TÁCH ĐIỆN THOẠI NÂNG CẤP (Xử lý dứt điểm chuỗi số dính liền 10-11 số)
       var parsedPhone = "";
-      var phoneMatch = text.match(/(0\d{2,3}[\s\.-]?\d{3}[\s\.-]?\d{3,4})/);
+      var phoneMatch = text.match(/\b(0\d{9,10})\b/) || text.match(/(0\d{1,4}[\s\.-]?\d{3,4}[\s\.-]?\d{3,4})/);
       if (phoneMatch) parsedPhone = phoneMatch[0].replace(/[\s\.-]/g, '');
       
       // Ánh xạ Ngành nghề
@@ -537,11 +543,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       }
 
       // Ánh xạ Sản phẩm
-      var parsedProd = "Cisco (Tổng đài)";
+      var parsedProd = "Cisco (Tổng đài)"; 
       if (t.includes("cả hai") || t.includes("cả 2") || (t.includes("crm") && t.includes("cisco"))) {
           parsedProd = "CRM + Cisco";
       } else if (t.includes("crm")) {
           parsedProd = "CRM";
+      } else if (t.includes("cisco") || t.includes("tổng đài")) {
+          parsedProd = "Cisco (Tổng đài)";
       }
 
       // Ánh xạ Trạng thái
@@ -571,22 +579,30 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           else if (unit === 'ngàn' || unit === 'k') parsedVal = num * 1000;
       }
 
-      // Cắt tỉa loại trừ từ rác để trích xuất chuẩn xác Tên khách hàng
+      // CẮT TỈA LOẠI TRỪ TỪ RÁC ĐỂ TRÍCH XUẤT CHUẨN XÁC TÊN KHÁCH HÀNG
       var parsedComp = text;
       
-      // Gọt sạch email và sđt khỏi tên công ty
+      // Gọt sạch email và sđt khỏi tên công ty trước
       if (parsedEmail) parsedComp = parsedComp.replace(parsedEmail, '');
       if (phoneMatch) parsedComp = parsedComp.replace(phoneMatch[0], '');
       
+      // Gọt sạch các định dạng ngày tháng (Ví dụ: ngày 28/06, ngày 28-06, 28/06)
+      parsedComp = parsedComp.replace(/(ngày\s*)?\d{1,2}[\/\-]\d{1,2}/gi, '');
+      
+      // Khử rác hệ thống và các từ nối hành động nâng cấp
       parsedComp = parsedComp.replace(/(sđt|số điện thoại|điện thoại|phone|email|mail)\s*:/gi, '');
       parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên)\s*:/gi, '');
       parsedComp = parsedComp.replace(/\d+(?:\.\d+)?\s*(triệu|củ|tỷ|ngàn|k)/gi, '');
       parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|ngân hàng|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
       parsedComp = parsedComp.replace(/(cả hai|cả 2|crm\s*\+\s*cisco|crm|cisco|tổng đài)/gi, '');
       parsedComp = parsedComp.replace(/(chốt deal|chốt|ký hợp đồng|ký|báo giá|gửi giá|demo|test|đàm phán|thương lượng|liên hệ|gọi lại|tiếp cận|mất khách|thua|fail|hủy|cần tư vấn|muốn tư vấn|tư vấn|quan tâm|hỏi về|mua|làm)/gi, '');
-      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên|là|cho|vừa|xong|đã|đang|muốn|cần)/gi, '');
+      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên|là|cho|vừa|xong|đã|đang|muốn|cần|vào ngày|vào lúc|ngày|hôm nay|ngày mai)/gi, '');
       
+      // Xử lý dọn dẹp các dấu phẩy, dấu chấm thừa do cắt tỉa để lại
+      parsedComp = parsedComp.replace(/,\s*,/g, ',');
       parsedComp = parsedComp.replace(/\s+/g, ' ').trim();
+      parsedComp = parsedComp.replace(/[\s,.-]+$/g, ''); // Cắt sạch rác ở cuối dòng
+      parsedComp = parsedComp.replace(/^[\s,.-]+/g, ''); // Cắt sạch rác ở đầu dòng
       
       if (!parsedComp) parsedComp = "Khách hàng mới";
       parsedComp = parsedComp.charAt(0).toUpperCase() + parsedComp.slice(1);
@@ -611,7 +627,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       });
 
       inputEl.value = ""; 
-      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công!</span>';
+      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công! Số ĐT & Email đã vào form chuẩn.</span>';
       setTimeout(function() { setTab("customers"); }, 800);
     });
 
