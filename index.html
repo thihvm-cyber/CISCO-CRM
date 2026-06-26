@@ -3,1621 +3,472 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đài Quan Sát — Nhu cầu khách hàng CRM &amp; Cisco</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin></script>
+<title>🚀 CISCO CRM - Quản lý Khách hàng</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg-deep:#0B1320;
-    --bg-panel:#101A2C;
-    --bg-card:#141F35;
-    --bg-card-hover:#182542;
-    --line:#22304A;
-    --line-soft:#1A2740;
-    --text-hi:#EAF1FB;
-    --text-mid:#AEC0DC;
-    --text-low:#6E84A8;
-    --teal:#2DD4BF;
-    --teal-dim:#0F4A45;
-    --indigo:#818CF8;
-    --indigo-dim:#2C2D6B;
-    --amber:#F5A524;
-    --amber-dim:#4A3613;
-    --rose:#FB7185;
-    --rose-dim:#4A1F2A;
-    --green:#34D399;
-    --font-display:'Space Grotesk', sans-serif;
-    --font-body:'Inter', sans-serif;
-    --font-mono:'JetBrains Mono', monospace;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-hi);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
-  #root{min-height:100vh;}
-  ::-webkit-scrollbar{width:8px;height:8px;}
-  ::-webkit-scrollbar-track{background:transparent;}
-  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
-  button{font-family:inherit;cursor:pointer;}
-  input,textarea,select{font-family:inherit;}
-  *:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
-  @media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;transition-duration:0.01ms !important;}}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .app-shell{display:flex;min-height:100vh;}
-  .sidebar{
-    width:248px;flex-shrink:0;background:var(--bg-panel);
-    border-right:1px solid var(--line-soft);
-    display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;
-  }
-  .brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;border-bottom:1px solid var(--line-soft);margin-bottom:20px;}
-  .brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .brand-name{font-family:var(--font-display);font-weight:600;font-size:15px;line-height:1.2;color:var(--text-hi);}
-  .brand-sub{font-size:11px;color:var(--text-low);font-family:var(--font-mono);letter-spacing:0.03em;}
+:root {
+  --teal:    #0EA5E9; --teal-l:   #E0F2FE; --teal-d:    #0369A1;
+  --purple:  #8B5CF6; --purple-l: #EDE9FE; --purple-d:  #5B21B6;
+  --amber:   #F59E0B; --amber-l:  #FEF3C7; --amber-d:   #92400E;
+  --coral:   #10B981; --coral-l:  #D1FAE5; --coral-d:   #065F46;
+  --gray:    #6B7280; --gray-l:   #F3F4F6; --gray-d:    #1F2937;
+  --border:  rgba(31,41,55,0.12);
+  --border-md: rgba(31,41,55,0.20);
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+}
 
-  .nav-item{
-    display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;
-    color:var(--text-mid);font-size:13.5px;font-weight:500;background:transparent;border:none;width:100%;text-align:left;
-    transition:background .15s,color .15s;margin-bottom:2px;
-  }
-  .nav-item:hover{background:var(--bg-card);color:var(--text-hi);}
-  .nav-item.active{background:var(--bg-card);color:var(--teal);}
-  .nav-item.active .nav-dot{background:var(--teal);box-shadow:0 0 8px var(--teal);}
-  .nav-dot{width:6px;height:6px;border-radius:50%;background:var(--line);flex-shrink:0;transition:background .15s;}
-  .nav-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-low);font-family:var(--font-mono);padding:16px 12px 6px;}
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(160deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+  background-attachment: fixed;
+  color: #1F2937; font-size: 14px; min-height: 100vh;
+}
 
-  .sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--line-soft);font-size:11px;color:var(--text-low);font-family:var(--font-mono);}
+#app { max-width: 1000px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
 
-  .main{flex:1;min-width:0;overflow-x:hidden;}
-  .topbar{
-    height:64px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between;
-    padding:0 28px;position:sticky;top:0;background:rgba(11,19,32,0.85);backdrop-filter:blur(8px);z-index:20;
-  }
-  .topbar h1{font-family:var(--font-display);font-size:17px;font-weight:600;margin:0;}
-  .topbar p{font-size:12px;color:var(--text-low);margin:2px 0 0;}
-  .content{padding:28px;max-width:1320px;}
+.hero {
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(115deg, #0F172A 0%, #1E293B 40%, #0369A1 100%);
+  box-shadow: var(--shadow-md);
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 15%, rgba(14,165,233,0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 15% 85%, rgba(139,92,246,0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-top { display: flex; align-items: flex-start; gap: 12px; }
+.hero-title-input { font-size: 20px; font-weight: 600; width: 100%; border: none; background: transparent; color: #fff; padding: 2px 0; outline: none; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.hero-title-input::placeholder { color: rgba(255,255,255,0.5); }
+.hero-dest-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.hero-dest-input { font-size: 13px; width: 100%; border: none; background: transparent; color: rgba(255,255,255,0.75); padding: 2px 0; outline: none; }
+.hero-meta { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.hero-badge { font-size: 12px; font-weight: 500; background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; color: rgba(255,255,255,0.9); }
+.sync-btn { display: flex; align-items: center; gap: 6px; flex-shrink: 0; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: var(--radius-md); padding: 7px 12px; color: rgba(255,255,255,0.9); cursor: pointer; font-size: 12px; white-space: nowrap; backdrop-filter: blur(4px); font-family: inherit; transition: background 0.15s; }
+.sync-btn:hover { background: rgba(255,255,255,0.25); }
 
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-size:12px;font-weight:500;}
-  .pill-teal{background:var(--teal-dim);color:var(--teal);}
-  .pill-indigo{background:var(--indigo-dim);color:var(--indigo);}
-  .pill-amber{background:var(--amber-dim);color:var(--amber);}
-  .pill-rose{background:var(--rose-dim);color:var(--rose);}
-  .pill-neutral{background:var(--bg-card);color:var(--text-mid);border:1px solid var(--line);}
+.alert-bar { display: flex; align-items: center; margin-top: 10px; font-size: 13px; border-radius: var(--radius-md); padding: 9px 12px; gap: 8px; }
+.alert-success { background: rgba(16,185,129,0.15); color: #A7F3D0; border: 1px solid rgba(16,185,129,0.3); }
+.alert-danger  { background: rgba(239,68,68,0.15);  color: #FECACA; border: 1px solid rgba(239,68,68,0.3); }
 
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
-  .kpi-card{background:var(--bg-card);border:1px solid var(--line-soft);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;}
-  .kpi-label{font-size:12px;color:var(--text-low);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;}
-  .kpi-value{font-family:var(--font-display);font-size:30px;font-weight:600;color:var(--text-hi);line-height:1;}
-  .kpi-delta{font-size:12px;margin-top:8px;font-weight:500;}
-  .kpi-delta.up{color:var(--green);}
-  .kpi-delta.down{color:var(--rose);}
+.tabs-wrap { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 6px; margin-bottom: 1.25rem; display: flex; gap: 4px; overflow-x: auto; box-shadow: var(--shadow); }
+.tab-btn { display: flex; align-items: center; gap: 7px; flex-shrink: 0; font-size: 13px; font-weight: 500; padding: 8px 14px; border: none; background: transparent; color: var(--gray); border-radius: var(--radius-md); cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+.tab-btn:hover { background: var(--gray-l); color: var(--gray-d); }
+.tab-btn.active { color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+.tab-btn[data-tab="overview"].active  { background: linear-gradient(135deg, var(--teal), var(--teal-d)); }
+.tab-btn[data-tab="customers"].active { background: linear-gradient(135deg, var(--purple), var(--purple-d)); }
 
-  .card{background:var(--bg-card);border:1px solid var(--line-soft);border-radius:16px;padding:22px;margin-bottom:20px;}
-  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
-  .card-title{font-family:var(--font-display);font-size:15.5px;font-weight:600;color:var(--text-hi);}
-  .card-sub{font-size:12.5px;color:var(--text-low);margin-top:3px;}
-  .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; margin-bottom: 14px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.card-teal::before   { background: linear-gradient(90deg, var(--teal), #38BDF8); }
+.card-purple::before { background: linear-gradient(90deg, var(--purple), #A78BFA); }
 
-  .seg-toggle{display:flex;background:var(--bg-panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;}
-  .seg-btn{padding:6px 13px;border-radius:7px;border:none;background:transparent;color:var(--text-low);font-size:12.5px;font-weight:500;}
-  .seg-btn.active{background:var(--bg-card-hover);color:var(--teal);}
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: var(--gray-d); display: flex; align-items: center; gap: 8px; }
+.card-title-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-teal   { background: var(--teal); }
+.dot-purple { background: var(--purple); }
 
-  .btn{padding:9px 16px;border-radius:9px;border:none;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:transform .1s, filter .15s;}
-  .btn:active{transform:scale(0.97);}
-  .btn-primary{background:linear-gradient(135deg,var(--teal),#22b8a3);color:#04201c;}
-  .btn-primary:hover{filter:brightness(1.08);}
-  .btn-ghost{background:var(--bg-panel);color:var(--text-mid);border:1px solid var(--line);}
-  .btn-ghost:hover{color:var(--text-hi);border-color:var(--text-low);}
-  .btn-danger{background:var(--rose-dim);color:var(--rose);}
-  .btn-rec{background:var(--rose-dim);color:var(--rose);border:1px solid var(--rose);}
-  .btn-rec.recording{background:var(--rose);color:#1a0508;}
+table { width: 100%; font-size: 13px; border-collapse: collapse; }
+th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--gray); padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; text-align: left; }
+td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #F8FAFC; }
 
-  .field{margin-bottom:14px;}
-  .field label{display:block;font-size:12.5px;color:var(--text-mid);margin-bottom:6px;font-weight:500;}
-  .field input,.field select,.field textarea{
-    width:100%;background:var(--bg-panel);border:1px solid var(--line);border-radius:9px;color:var(--text-hi);
-    padding:10px 12px;font-size:13.5px;transition:border-color .15s;
-  }
-  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);}
-  .field-ai-filled{border-color:var(--teal) !important;background:var(--teal-dim) !important;animation:ai-pulse 1.4s ease-in-out 1;}
-  @keyframes ai-pulse{0%{box-shadow:0 0 0 0 rgba(45,212,191,0.5);}70%{box-shadow:0 0 0 6px rgba(45,212,191,0);}100%{box-shadow:0 0 0 0 rgba(45,212,191,0);}}
-  .field textarea{resize:vertical;min-height:90px;line-height:1.5;}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+input, select, textarea { font-size: 13px; font-family: inherit; color: var(--gray-d); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 9px; background: #fff; width: 100%; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+.needs-fill { background: #FEF3C7 !important; border-color: #FBBF24 !important; }
 
-  .waveform{display:flex;align-items:center;gap:3px;height:22px;}
-  .waveform span{width:3px;background:var(--rose);border-radius:2px;animation:wv 1s ease-in-out infinite;}
-  @keyframes wv{0%,100%{height:5px;}50%{height:20px;}}
+.badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; display: inline-block; }
+.status-won  { background: #D1FAE5; color: #065F46; border: 1px solid #34D399; }
+.status-lost { background: #FEE2E2; color: #991B1B; border: 1px solid #F87171; }
+.status-prog { background: #E0F2FE; color: #0369A1; border: 1px solid #38BDF8; }
+.status-wait { background: #FEF3C7; color: #92400E; border: 1px solid #FBBF24; }
 
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{text-align:left;color:var(--text-low);font-weight:500;font-size:11.5px;text-transform:uppercase;letter-spacing:0.03em;padding:9px 12px;border-bottom:1px solid var(--line-soft);font-family:var(--font-mono);}
-  td{padding:12px 12px;border-bottom:1px solid var(--line-soft);color:var(--text-mid);vertical-align:top;}
-  tr.row-hover:hover td{background:var(--bg-card-hover);}
-  td.strong{color:var(--text-hi);font-weight:500;}
+.icon-btn { display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #9CA3AF; padding: 5px; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.15s; }
+.icon-btn:hover { background: #FEE2E2; color: #DC2626; }
+.add-btn { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; border: 1.5px dashed var(--border-md); border-radius: var(--radius-md); padding: 9px 14px; background: transparent; color: var(--gray); margin-top: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; width: 100%; justify-content: center; }
+.add-btn:hover { background: var(--gray-l); border-color: var(--teal); color: var(--teal); }
 
-  .empty-state{text-align:center;padding:60px 20px;color:var(--text-low);}
-  .empty-state .em-icon{font-size:32px;margin-bottom:12px;opacity:0.6;}
-  .empty-state h3{color:var(--text-mid);font-family:var(--font-display);font-weight:600;margin:0 0 6px;}
-  .empty-state p{font-size:13px;margin:0;}
-
-  .tag-chip{display:inline-flex;padding:4px 10px;border-radius:7px;font-size:11.5px;font-weight:500;background:var(--bg-panel);color:var(--text-mid);border:1px solid var(--line);margin:2px 4px 2px 0;}
-
-  .loader-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal);animation:pulse 1.2s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:0.3;}50%{opacity:1;}}
-
-  .insight-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line-soft);}
-  .insight-item:last-child{border-bottom:none;}
-  .insight-num{font-family:var(--font-mono);font-size:11px;color:var(--text-low);width:22px;flex-shrink:0;padding-top:2px;}
-  .insight-body p{margin:0 0 6px;font-size:13.5px;line-height:1.55;color:var(--text-mid);}
-  .insight-body p strong{color:var(--text-hi);}
-
-  .modal-overlay{position:fixed;inset:0;background:rgba(5,9,16,0.7);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
-  .modal{background:var(--bg-panel);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;}
-
-  .progress-track{height:6px;background:var(--bg-panel);border-radius:99px;overflow:hidden;}
-  .progress-fill{height:100%;border-radius:99px;}
-
-  .upload-zone{border:1.5px dashed var(--line);border-radius:12px;padding:28px;text-align:center;background:var(--bg-panel);transition:border-color .15s,background .15s;}
-  .upload-zone.drag{border-color:var(--teal);background:var(--teal-dim);}
-
-  @media (max-width:980px){
-    .sidebar{display:none;}
-    .kpi-grid{grid-template-columns:repeat(2,1fr);}
-    .grid-2,.grid-3{grid-template-columns:1fr;}
-    .field-row{grid-template-columns:1fr;}
-    .content{padding:18px;}
-  }
+.loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5rem 0; }
+.spinner { width: 36px; height: 36px; border: 3px solid transparent; border-top-color: var(--teal); border-right-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
-<script>
-  window.addEventListener('error', function(e){
-    var root = document.getElementById('root');
-    if (root && !root.dataset.mounted) {
-      var msg = (e && e.message) ? e.message : 'Lỗi không xác định';
-      var src = (e && e.filename) ? e.filename : '';
-      root.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0B1320;color:#EAF1FB;font-family:sans-serif;padding:24px;text-align:center;">' +
-        '<div><div style="font-size:15px;font-weight:600;margin-bottom:8px;">Không tải được một thư viện cần thiết</div>' +
-        '<div style="font-size:13px;color:#AEC0DC;max-width:480px;">' + msg + (src ? ('<br><span style="font-size:11px;color:#6E84A8;">' + src + '</span>') : '') + '</div>' +
-        '<div style="font-size:12px;color:#6E84A8;margin-top:14px;">Thử tải lại trang. Nếu vẫn lỗi, kiểm tra kết nối mạng hoặc trình chặn quảng cáo (ad-blocker) có đang chặn CDN không.</div></div></div>';
-    }
-  }, true);
-</script>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo, useRef, useCallback } = React;
+<div id="app"></div>
 
-/* ---------------- Lightweight SVG chart components (no external deps) ---------------- */
-const CHART_FONT = "11.5px Inter, sans-serif";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyPtbiBsvJRALiZSgTSbXnRvHkT5_7fW8",
+    authDomain: "mien-trung-chay-nang-2026.firebaseapp.com",
+    databaseURL: "https://mien-trung-chay-nang-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mien-trung-chay-nang-2026",
+    storageBucket: "mien-trung-chay-nang-2026.firebasestorage.app",
+    messagingSenderId: "455098963218",
+    appId: "1:455098963218:web:b187181effa61a452d4fcb"
+  };
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getDatabase(fbApp);
+  // Đã đổi tên nhánh database để không đụng vào dữ liệu Tour Miền Trung
+  const DATA_REF = ref(db, "cisco_crm_2026");
+  window._fbSet = (data) => set(DATA_REF, data);
+  window._fbOnValue = (cb) => onValue(DATA_REF, snap => cb(snap.val()));
+  window.dispatchEvent(new Event("firebase-ready"));
+</script>
 
-function useContainerWidth() {
-  const ref = useRef(null);
-  const [width, setWidth] = useState(600);
-  useEffect(() => {
-    if (!ref.current) return;
-    const ro = new ResizeObserver(entries => {
-      for (const entry of entries) setWidth(Math.max(280, entry.contentRect.width));
+<script>
+(function () {
+  // KHÓA API AQ ĐÃ CHỨNG MINH LÀ CHẠY MƯỢT
+  var GEMINI_API_KEY = "AQ.Ab8RN6KBnmHIb8suilaP7g914bhLojcDOhP925L-qLzCByPmxw";
+
+  var INDUSTRIES = ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
+  var PRODUCTS = ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"];
+  var STAGES = ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"];
+
+  function uid() { return Math.random().toString(36).slice(2,10); }
+
+  function esc(s) {
+    if (s == null) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function vnd(n) { return (Number(n)||0).toLocaleString("vi-VN")+" ₫"; }
+  function fmtDate(iso) { if(!iso) return "—"; var p=iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
+
+  function defaultData() {
+    return {
+      info: { title: "Cisco CRM Report", subtitle: "VietJet Contact Center & Sales" },
+      customers: []
+    };
+  }
+
+  function deepMerge(base, inc) {
+    if(!inc) return base;
+    var m = JSON.parse(JSON.stringify(base));
+    if(inc.info) m.info = Object.assign({},base.info,inc.info);
+    if(inc.customers) m.customers = inc.customers;
+    return m;
+  }
+
+  var state = { data: defaultData(), activeTab: "overview", loading: true, syncState: "loading", lastSynced: null, error: null, saving: false, fbReady: false };
+  var root = document.getElementById("app");
+  var saveTimer = null;
+
+  window.addEventListener("firebase-ready", function() {
+    state.fbReady = true;
+    window._fbOnValue(function(val) {
+      if(state.saving) return;
+      if(val) state.data = deepMerge(defaultData(),val);
+      state.loading = false; state.syncState = "synced"; state.lastSynced = new Date(); state.error = null;
+      render();
     });
-    ro.observe(ref.current);
-    setWidth(ref.current.offsetWidth || 600);
-    return () => ro.disconnect();
-  }, []);
-  return [ref, width];
-}
+  });
+  setTimeout(function(){ if(!state.fbReady){ state.loading=false; state.syncState="nofb"; state.error="Không kết nối được Firebase — kiểm tra databaseURL và rules."; render(); }}, 6000);
 
-function ChartTooltip({ x, y, items, visible }) {
-  if (!visible) return null;
-  return (
-    <div style={{
-      position: "absolute", left: x, top: y, transform: "translate(-50%,-100%)",
-      background: "#101A2C", border: "1px solid #22304A", borderRadius: 9, padding: "8px 11px",
-      fontSize: 12.5, color: "#EAF1FB", pointerEvents: "none", zIndex: 10, whiteSpace: "nowrap", boxShadow: "0 6px 18px rgba(0,0,0,0.35)"
-    }}>
-      {items.map((it, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, color: it.color || "#AEC0DC" }}>
-          {it.color && <span style={{ width: 7, height: 7, borderRadius: "50%", background: it.color, display: "inline-block" }}></span>}
-          <span>{it.label}: <strong style={{ color: "#fff" }}>{it.value}</strong></span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function niceMax(max) {
-  if (max <= 0) return 5;
-  const exp = Math.floor(Math.log10(max));
-  const base = Math.pow(10, exp);
-  const norm = max / base;
-  let n;
-  if (norm <= 1) n = 1; else if (norm <= 2) n = 2; else if (norm <= 5) n = 5; else n = 10;
-  return n * base;
-}
-
-/* AreaChartSVG: data=[{x: label, y: number}], color */
-function AreaChartSVG({ data, color = "#2DD4BF", height = 280, valueSuffix = "", yFormatter }) {
-  const [wrapRef, width] = useContainerWidth();
-  const [hover, setHover] = useState(null);
-  const padL = 38, padR = 16, padT = 16, padB = 30;
-  const innerW = Math.max(10, width - padL - padR);
-  const innerH = height - padT - padB;
-  const maxY = niceMax(Math.max(...data.map(d => d.y), 1));
-  const n = data.length;
-  const stepX = n > 1 ? innerW / (n - 1) : 0;
-  const pts = data.map((d, i) => ({ px: padL + stepX * i, py: padT + innerH - (d.y / maxY) * innerH, label: d.x, y: d.y }));
-  const linePath = pts.map((p, i) => (i === 0 ? "M" : "L") + p.px.toFixed(1) + "," + p.py.toFixed(1)).join(" ");
-  const areaPath = linePath + ` L${(pts[n - 1] ? pts[n - 1].px : padL).toFixed(1)},${(padT + innerH).toFixed(1)} L${padL},${(padT + innerH).toFixed(1)} Z`;
-  const gridLines = [0, 0.25, 0.5, 0.75, 1];
-  const gid = useRef("g" + Math.random().toString(36).slice(2, 8)).current;
-  return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: "block", overflow: "visible" }}>
-        <defs>
-          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.45" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {gridLines.map((g, i) => (
-          <line key={i} x1={padL} x2={width - padR} y1={padT + innerH * g} y2={padT + innerH * g} stroke="#22304A" strokeDasharray="3 3" />
-        ))}
-        <text x={8} y={padT + 4} fill="#6E84A8" fontSize="11">{yFormatter ? yFormatter(maxY) : maxY}</text>
-        <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
-        <path d={areaPath} fill={`url(#${gid})`} stroke="none" />
-        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-        {pts.map((p, i) => (
-          <g key={i}>
-            <circle cx={p.px} cy={p.py} r={hover === i ? 5 : 3} fill={color} stroke="#0B1320" strokeWidth="1.5"
-              onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }} />
-            <rect x={p.px - stepX / 2} y={padT} width={stepX || 20} height={innerH} fill="transparent"
-              onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
-          </g>
-        ))}
-        {pts.map((p, i) => (i % Math.ceil(n / 8 || 1) === 0 || i === n - 1) && (
-          <text key={i} x={p.px} y={height - 8} fill="#6E84A8" fontSize="10.5" textAnchor="middle">{p.label}</text>
-        ))}
-      </svg>
-      {hover !== null && pts[hover] && (
-        <ChartTooltip visible={true} x={pts[hover].px} y={pts[hover].py - 8}
-          items={[{ label: data[hover].x, value: (data[hover].y) + valueSuffix, color }]} />
-      )}
-    </div>
-  );
-}
-
-/* Generic vertical/horizontal bar chart. data=[{name, value}], colorFor(name,i) */
-function BarChartSVG({ data, height = 260, colorFor, layout = "vertical", angledLabels = false }) {
-  const [wrapRef, width] = useContainerWidth();
-  const [hover, setHover] = useState(null);
-  if (layout === "horizontal") {
-    const padL = 130, padR = 20, padT = 10, padB = 10;
-    const innerW = Math.max(10, width - padL - padR);
-    const rowH = 30;
-    const innerH = data.length * rowH;
-    const maxV = niceMax(Math.max(...data.map(d => d.value), 1));
-    return (
-      <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
-        <svg width="100%" height={innerH + padT + padB} viewBox={`0 0 ${width} ${innerH + padT + padB}`}>
-          {data.map((d, i) => {
-            const y = padT + i * rowH;
-            const w = (d.value / maxV) * innerW;
-            const c = colorFor ? colorFor(d.name, i) : "#2DD4BF";
-            return (
-              <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
-                <text x={padL - 10} y={y + rowH / 2 + 4} fill="#AEC0DC" fontSize="11.5" textAnchor="end">{d.name}</text>
-                <rect x={padL} y={y + 5} width={innerW} height={rowH - 10} fill="#141F35" rx="5" />
-                <rect x={padL} y={y + 5} width={Math.max(2, w)} height={rowH - 10} fill={c} rx="5" opacity={hover === i ? 1 : 0.92} />
-                <text x={padL + Math.max(2, w) + 8} y={y + rowH / 2 + 4} fill="#EAF1FB" fontSize="11.5">{d.value}</text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    );
+  function scheduleSave(next) {
+    state.data = next; state.syncState = "saving"; render();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      if(!state.fbReady) return;
+      state.saving = true;
+      window._fbSet(state.data).then(function(){ state.syncState="synced"; state.lastSynced=new Date(); state.error=null; })
+      .catch(function(e){ state.syncState="error"; state.error="Lỗi lưu: "+e.message; })
+      .finally(function(){ state.saving=false; render(); });
+    },800);
   }
-  const padL = 38, padR = 14, padT = 16, padB = angledLabels ? 56 : 30;
-  const innerW = Math.max(10, width - padL - padR);
-  const innerH = height - padT - padB;
-  const maxV = niceMax(Math.max(...data.map(d => d.value), 1));
-  const n = data.length;
-  const slot = innerW / n;
-  const barW = Math.min(46, slot * 0.55);
-  return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
-        {[0, 0.25, 0.5, 0.75, 1].map((g, i) => <line key={i} x1={padL} x2={width - padR} y1={padT + innerH * g} y2={padT + innerH * g} stroke="#22304A" strokeDasharray="3 3" />)}
-        <text x={8} y={padT + 4} fill="#6E84A8" fontSize="11">{maxV}</text>
-        <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
-        {data.map((d, i) => {
-          const cx = padL + slot * i + slot / 2;
-          const h = (d.value / maxV) * innerH;
-          const c = colorFor ? colorFor(d.name, i) : "#2DD4BF";
-          return (
-            <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
-              <rect x={cx - barW / 2} y={padT + innerH - h} width={barW} height={Math.max(1, h)} fill={c} rx="5" opacity={hover === i ? 1 : 0.92} />
-              {angledLabels ? (
-                <text x={cx} y={padT + innerH + 14} fill="#6E84A8" fontSize="10" textAnchor="end" transform={`rotate(-32 ${cx} ${padT + innerH + 14})`}>{d.name}</text>
-              ) : (
-                <text x={cx} y={padT + innerH + 18} fill="#6E84A8" fontSize="10.5" textAnchor="middle">{d.name.length > 10 ? d.name.slice(0, 9) + "…" : d.name}</text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      {hover !== null && (
-        <ChartTooltip visible={true} x={padL + slot * hover + slot / 2} y={padT + innerH - (data[hover].value / maxV) * innerH - 8}
-          items={[{ label: data[hover].name, value: data[hover].value, color: colorFor ? colorFor(data[hover].name, hover) : "#2DD4BF" }]} />
-      )}
-    </div>
-  );
-}
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function updatePath(path,value){ var n=clone(state.data),c=n; for(var i=0;i<path.length-1;i++) c=c[path[i]]; c[path[path.length-1]]=value; scheduleSave(n); }
+  function updateRow(col,id,field,value){
+    var n=clone(state.data),r=n[col].find(function(x){return x.id===id;});
+    if(!r) return; r[field]=value; scheduleSave(n);
+  }
+  function addRow(col,makeRow){ var n=clone(state.data); n[col].push(makeRow(n[col].length)); scheduleSave(n); }
+  function removeRow(col,id){ var n=clone(state.data); n[col]=n[col].filter(function(r){return r.id!==id;}); scheduleSave(n); }
+  function setTab(t){ state.activeTab=t; render(); }
 
-/* Stacked bar chart: data=[{month, [seriesKey]: value, ...}], series=[{key,color}] */
-function StackedBarChartSVG({ data, series, height = 260 }) {
-  const [wrapRef, width] = useContainerWidth();
-  const [hover, setHover] = useState(null);
-  const padL = 38, padR = 14, padT = 16, padB = 30;
-  const innerW = Math.max(10, width - padL - padR);
-  const innerH = height - padT - padB;
-  const totals = data.map(d => series.reduce((s, sr) => s + (d[sr.key] || 0), 0));
-  const maxV = niceMax(Math.max(...totals, 1));
-  const n = data.length;
-  const slot = innerW / n;
-  const barW = Math.min(46, slot * 0.55);
-  return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
-        {[0, 0.25, 0.5, 0.75, 1].map((g, i) => <line key={i} x1={padL} x2={width - padR} y1={padT + innerH * g} y2={padT + innerH * g} stroke="#22304A" strokeDasharray="3 3" />)}
-        <text x={8} y={padT + 4} fill="#6E84A8" fontSize="11">{maxV}</text>
-        <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
-        {data.map((d, i) => {
-          const cx = padL + slot * i + slot / 2;
-          let yCursor = padT + innerH;
-          return (
-            <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
-              {series.map((sr, si) => {
-                const v = d[sr.key] || 0;
-                const h = (v / maxV) * innerH;
-                yCursor -= h;
-                return <rect key={si} x={cx - barW / 2} y={yCursor} width={barW} height={Math.max(0, h)} fill={sr.color} rx={si === series.length - 1 ? 4 : 0} opacity={hover === i ? 1 : 0.92} />;
-              })}
-              <text x={cx} y={padT + innerH + 18} fill="#6E84A8" fontSize="10.5" textAnchor="middle">{d.month}</text>
-            </g>
-          );
-        })}
-      </svg>
-      {hover !== null && (
-        <ChartTooltip visible={true} x={padL + slot * hover + slot / 2} y={padT + innerH - (totals[hover] / maxV) * innerH - 8}
-          items={series.map(sr => ({ label: sr.key, value: data[hover][sr.key] || 0, color: sr.color }))} />
-      )}
-      <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 6, flexWrap: "wrap" }}>
-        {series.map((sr, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#AEC0DC" }}>
-            <span style={{ width: 8, height: 8, borderRadius: 2, background: sr.color, display: "inline-block" }}></span>{sr.key}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+  function selOpts(opts,cur){ return opts.map(function(o){ return '<option value="'+esc(o)+'"'+(o===cur?" selected":"")+'>'+esc(o)+'</option>'; }).join(""); }
 
-/* Multi-line chart: data=[{month, [seriesKey]: value}], series=[{key,color}] */
-function MultiLineChartSVG({ data, series, height = 300 }) {
-  const [wrapRef, width] = useContainerWidth();
-  const [hover, setHover] = useState(null);
-  const padL = 38, padR = 14, padT = 16, padB = 30;
-  const innerW = Math.max(10, width - padL - padR);
-  const innerH = height - padT - padB;
-  const n = data.length;
-  let maxV = 1;
-  series.forEach(sr => data.forEach(d => { if ((d[sr.key] || 0) > maxV) maxV = d[sr.key]; }));
-  maxV = niceMax(maxV);
-  const stepX = n > 1 ? innerW / (n - 1) : 0;
-  return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
-        {[0, 0.25, 0.5, 0.75, 1].map((g, i) => <line key={i} x1={padL} x2={width - padR} y1={padT + innerH * g} y2={padT + innerH * g} stroke="#22304A" strokeDasharray="3 3" />)}
-        <text x={8} y={padT + 4} fill="#6E84A8" fontSize="11">{maxV}</text>
-        <text x={8} y={padT + innerH + 4} fill="#6E84A8" fontSize="11">0</text>
-        {series.map((sr, si) => {
-          const pts = data.map((d, i) => ({ x: padL + stepX * i, y: padT + innerH - ((d[sr.key] || 0) / maxV) * innerH }));
-          const path = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
-          return <path key={si} d={path} fill="none" stroke={sr.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity="0.95" />;
-        })}
-        {data.map((d, i) => {
-          const cx = padL + stepX * i;
-          return <rect key={i} x={cx - stepX / 2} y={padT} width={stepX || 20} height={innerH} fill="transparent"
-            onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }} />;
-        })}
-        {data.map((d, i) => (i % Math.ceil(n / 8 || 1) === 0 || i === n - 1) && (
-          <text key={i} x={padL + stepX * i} y={height - 8} fill="#6E84A8" fontSize="10.5" textAnchor="middle">{d.month}</text>
-        ))}
-        {hover !== null && <line x1={padL + stepX * hover} x2={padL + stepX * hover} y1={padT} y2={padT + innerH} stroke="#6E84A8" strokeDasharray="3 3" />}
-      </svg>
-      {hover !== null && (
-        <ChartTooltip visible={true} x={padL + stepX * hover} y={padT + 10}
-          items={series.filter(sr => data[hover][sr.key]).map(sr => ({ label: sr.key, value: data[hover][sr.key], color: sr.color }))} />
-      )}
-      <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 8, flexWrap: "wrap" }}>
-        {series.map((sr, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#AEC0DC" }}>
-            <span style={{ width: 10, height: 2.5, background: sr.color, display: "inline-block" }}></span>{sr.key}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+  function syncLabel(){
+    if(state.syncState==="nofb") return "⚠ Mất kết nối Cloud";
+    if(state.syncState==="loading") return "Đang tải…";
+    if(state.syncState==="saving") return "Đang lưu lên Cloud…";
+    if(state.syncState==="error") return "⚠ Lỗi lưu trữ";
+    if(state.lastSynced){ var t=state.lastSynced; return "✓ Đồng bộ "+String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0"); }
+    return "✓ Sẵn sàng";
+  }
 
-/* Donut/Pie chart: data=[{name, value}], colors=[] */
-function PieChartSVG({ data, colors, height = 280 }) {
-  const [hover, setHover] = useState(null);
-  const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  const size = Math.min(height, 280);
-  const cx = size / 2, cy = size / 2, rOuter = size * 0.38, rInner = size * 0.23;
-  let angle = -90;
-  const slices = data.map((d, i) => {
-    const frac = d.value / total;
-    const startAngle = angle;
-    const endAngle = angle + frac * 360;
-    angle = endAngle;
-    return { ...d, startAngle, endAngle, color: colors[i % colors.length] };
-  });
-  const polarToCart = (r, a) => { const rad = (a * Math.PI) / 180; return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)]; };
-  const arcPath = (s) => {
-    const [x1, y1] = polarToCart(rOuter, s.startAngle);
-    const [x2, y2] = polarToCart(rOuter, s.endAngle);
-    const [x3, y3] = polarToCart(rInner, s.endAngle);
-    const [x4, y4] = polarToCart(rInner, s.startAngle);
-    const largeArc = s.endAngle - s.startAngle > 180 ? 1 : 0;
-    return `M${x1},${y1} A${rOuter},${rOuter} 0 ${largeArc} 1 ${x2},${y2} L${x3},${y3} A${rInner},${rInner} 0 ${largeArc} 0 ${x4},${y4} Z`;
-  };
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", justifyContent: "center" }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {slices.map((s, i) => (
-          <path key={i} d={arcPath(s)} fill={s.color} opacity={hover === null || hover === i ? 1 : 0.45}
-            onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer", transition: "opacity .15s" }} />
-        ))}
-        <text x={cx} y={cy - 4} textAnchor="middle" fill="#EAF1FB" fontSize="20" fontWeight="600" fontFamily="Space Grotesk, sans-serif">
-          {hover !== null ? slices[hover].value : total}
-        </text>
-        <text x={cx} y={cy + 14} textAnchor="middle" fill="#6E84A8" fontSize="10.5">
-          {hover !== null ? slices[hover].name.slice(0, 14) : "Tổng"}
-        </text>
-      </svg>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {slices.map((s, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: hover === i ? "#EAF1FB" : "#AEC0DC", cursor: "pointer" }}
-            onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, display: "inline-block" }}></span>
-            {s.name} <span style={{ color: "#6E84A8" }}>({s.value})</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+  function icon(name){
+    var d={
+      home:"M3 9.5 12 3l9 6.5M5 10v10h14V10", users:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75", refresh:"M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5", plus:"M12 5v14M5 12h14", trash:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13", alert:"M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01", chart:"M18 20V10M12 20V4M6 20v-6"
+    };
+    return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+(d[name]||"")+'"/></svg>';
+  }
 
-/* Radar chart: data=[{name, value}] */
-function RadarChartSVG({ data, height = 300, color = "#2DD4BF" }) {
-  const size = Math.min(height, 300);
-  const cx = size / 2, cy = size / 2, r = size * 0.34;
-  const maxV = niceMax(Math.max(...data.map(d => d.value), 1));
-  const n = data.length || 1;
-  const angleStep = (Math.PI * 2) / n;
-  const pointFor = (i, value) => {
-    const a = -Math.PI / 2 + angleStep * i;
-    const rad = (value / maxV) * r;
-    return [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
-  };
-  const ringLevels = [0.25, 0.5, 0.75, 1];
-  const polygonFor = (frac) => data.map((d, i) => pointFor(i, maxV * frac).join(",")).join(" ");
-  const dataPolygon = data.map((d, i) => pointFor(i, d.value).join(",")).join(" ");
-  return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {ringLevels.map((f, i) => <polygon key={i} points={polygonFor(f)} fill="none" stroke="#22304A" strokeWidth="1" />)}
-        {data.map((d, i) => { const [x, y] = pointFor(i, maxV); return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#22304A" strokeWidth="1" />; })}
-        <polygon points={dataPolygon} fill={color} fillOpacity="0.32" stroke={color} strokeWidth="2" />
-        {data.map((d, i) => { const [x, y] = pointFor(i, d.value); return <circle key={i} cx={x} cy={y} r="3" fill={color} />; })}
-        {data.map((d, i) => {
-          const [lx, ly] = pointFor(i, maxV * 1.18);
-          return <text key={i} x={lx} y={ly} fill="#AEC0DC" fontSize="11" textAnchor="middle" dominantBaseline="middle">{d.name.length > 10 ? d.name.slice(0, 9) + "…" : d.name}</text>;
-        })}
-      </svg>
-    </div>
-  );
-}
+  function renderHeader(){
+    var info=state.data.info;
+    var spinning=state.syncState==="loading"||state.syncState==="saving";
+    var h='<div class="hero"><div class="hero-content">';
+    h+='<div class="hero-top">';
+    h+='<div style="flex:1;min-width:0;">';
+    h+='<input data-path="info.title" value="'+esc(info.title)+'" placeholder="Tên Báo Cáo" class="hero-title-input" />';
+    h+='<div class="hero-dest-row"><input data-path="info.subtitle" value="'+esc(info.subtitle)+'" placeholder="Mô tả dự án" class="hero-dest-input" /></div>';
+    h+='</div>';
+    h+='<button id="sync-btn" class="sync-btn"><span class="'+(spinning?"spin":"")+'" style="display:flex;">'+icon("refresh")+'</span><span>'+syncLabel()+'</span></button>';
+    h+='</div>';
+    h+='<div class="hero-meta">';
+    h+='<span class="hero-badge">📊 Data Realtime Firebase</span>';
+    h+='</div>';
+    if(state.syncState==="nofb"||state.syncState==="error"){
+      h+='<div class="alert-bar alert-danger">'+icon("alert")+'<span>'+esc(state.error||"Lỗi kết nối Đám mây")+'</span></div>';
+    } else if(state.syncState==="synced"){
+      h+='<div class="alert-bar alert-success">'+icon("refresh")+'<span>Hệ thống online — Dữ liệu đồng bộ Realtime lập tức</span></div>';
+    }
+    h+='</div></div>';
+    return h;
+  }
 
-/* ---------------- Constants ---------------- */
-const PRODUCTS = ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"];
-const STAGES = ["Tiếp cận", "Liên hệ", "Demo", "Đề xuất/Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"];
-const STAGE_COLORS = {
-  "Tiếp cận": "#6E84A8", "Liên hệ": "#818CF8", "Demo": "#2DD4BF",
-  "Đề xuất/Báo giá": "#F5A524", "Đàm phán": "#FB923C", "Ký hợp đồng": "#34D399", "Mất khách": "#FB7185"
-};
-const INDUSTRIES = ["Bán lẻ", "Tài chính/Ngân hàng", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
+  function renderTabs(){
+    var tabs=[ {id:"overview",label:"Tổng quan & Nhập liệu",icon:"home"}, {id:"customers",label:"Danh sách Pipeline",icon:"users"} ];
+    var h='<div class="tabs-wrap">';
+    tabs.forEach(function(t){ h+='<button class="tab-btn'+(state.activeTab===t.id?" active":"")+'" data-tab="'+t.id+'">'+icon(t.icon)+'<span>'+t.label+'</span></button>'; });
+    return h+'</div>';
+  }
 
-const NAV = [
-  { id: "input", label: "Nhập liệu", icon: "✎" },
-  { id: "dashboard", label: "Dashboard", icon: "▤" },
-  { id: "trends", label: "Xu hướng", icon: "∼" },
-  { id: "deepdive", label: "Deep-dive", icon: "◎" },
-  { id: "ai", label: "Gợi ý AI", icon: "✦" },
-];
+  function renderOverview(){
+    var data = state.data;
+    var totalCustomers = data.customers.length;
+    var wonCustomers = data.customers.filter(function(c){ return c.stage === "Ký hợp đồng"; }).length;
+    
+    var pipelineValue = data.customers.filter(function(c){ return c.stage !== "Mất khách"; }).reduce(function(s,c){ return s + (Number(c.value)||0); }, 0);
+    var wonValue = data.customers.filter(function(c){ return c.stage === "Ký hợp đồng"; }).reduce(function(s,c){ return s + (Number(c.value)||0); }, 0);
+    
+    var h="";
 
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-const fmtVND = (n) => {
-  if (n == null || isNaN(n)) return "—";
-  if (n >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, "") + " tỷ";
-  if (n >= 1e6) return (n / 1e6).toFixed(0) + " tr";
-  return n.toLocaleString("vi-VN");
-};
-const fmtDate = (iso) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
-};
-const monthKey = (iso) => {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
-
-/* ---------------- (Không còn seed data demo — app khởi động với danh sách trống) ---------------- */
-
-/* ---------------- Firebase helpers (Realtime Database, đồng bộ đa thiết bị) ---------------- */
-function waitForFirebase(timeoutMs = 8000) {
-  return new Promise((resolve) => {
-    if (window.__firebase && window.__firebase.ready) { resolve(true); return; }
-    const onReady = () => { window.removeEventListener("firebase-ready", onReady); resolve(!!(window.__firebase && window.__firebase.ready)); };
-    window.addEventListener("firebase-ready", onReady);
-    setTimeout(() => { window.removeEventListener("firebase-ready", onReady); resolve(!!(window.__firebase && window.__firebase.ready)); }, timeoutMs);
-  });
-}
-async function saveCustomers(list) {
-  const ok = await waitForFirebase();
-  if (!ok || !window.__firebase) { console.error("Firebase chưa sẵn sàng, không lưu được"); return; }
-  try { await window.__firebase.saveCustomers(list); } catch (e) { console.error("Lỗi lưu Firebase:", e); }
-}
-async function saveAICache(obj) {
-  const ok = await waitForFirebase();
-  if (!ok || !window.__firebase) { console.error("Firebase chưa sẵn sàng, không lưu được"); return; }
-  try { await window.__firebase.saveAICache(obj); } catch (e) { console.error("Lỗi lưu Firebase:", e); }
-}
-
-/* ---------------- Gemini API call helper (giữ tên callClaude để tương thích các chỗ gọi cũ) ---------------- */
-const GEMINI_API_KEY = "AQ.Ab8RN6I9sW3QaJWxEwhycV18GdC_imryH9c6XvyDb85e9PDMyQ";
-const GEMINI_MODEL = "gemini-1.5-pro";
-async function callClaude(systemPrompt, userPrompt, maxTokens = 1500) {
-  let resp;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  try {
-    resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 }
-      })
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:1.25rem;">';
+    var stats=[ 
+      {label:"Tổng số Lead / KH",val:totalCustomers,grad:"linear-gradient(135deg,#64748B,#475569)"}, 
+      {label:"Giá trị Pipeline",val:vnd(pipelineValue),grad:"linear-gradient(135deg,#0EA5E9,#0284C7)"}, 
+      {label:"Hợp đồng đã ký",val:wonCustomers,grad:"linear-gradient(135deg,#8B5CF6,#7C3AED)"}, 
+      {label:"Doanh thu Chốt deal",val:vnd(wonValue),grad:"linear-gradient(135deg,#10B981,#059669)"} 
+    ];
+    stats.forEach(function(s){
+      h+='<div style="background:'+s.grad+';border-radius:16px;padding:20px;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.1);">';
+      h+='<div style="font-size:13px;opacity:0.85;margin-bottom:6px;font-weight:500;">'+s.label+'</div>';
+      h+='<div style="font-size:22px;font-weight:700;">'+s.val+'</div></div>';
     });
-  } catch (networkErr) {
-    throw new Error("Không kết nối được tới AI (lỗi mạng): " + networkErr.message);
+    h+='</div>';
+
+    // BỘ NHẬP LIỆU AI GEMINI (GIỮ NGUYÊN CORE TỪ TOUR)
+    h+='<div class="card card-teal" style="background: linear-gradient(135deg, #F0F9FF, #fff); border-color:#BAE6FD;">';
+    h+='<div class="card-title"><span class="card-title-dot dot-teal"></span>Trợ lý AI bóc tách thông tin Sale B2B</div>';
+    h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
+    h+='<input id="ai-input" placeholder="Nói yêu cầu... (VD: Vừa đi demo xong cho Mekong Retail, ngành bán lẻ, chốt deal tổng đài 150 triệu)" style="flex:1; min-width:220px; padding:10px; border-radius:8px;" />';
+    h+='<button id="mic-btn" type="button" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-family:inherit; font-size:13px;">🎙️ Nói</button>';
+    h+='<label for="ai-file" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-size:13px;">📷 Chụp Note</label>';
+    h+='<input type="file" id="ai-file" accept="image/*" style="display:none;" />';
+    h+='<button id="ai-btn" style="cursor:pointer; background:#0284C7; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; font-family:inherit; font-size:13px;">Xử lý ngay</button>';
+    h+='</div>';
+    h+='<p id="ai-status" style="font-size:13px; color:var(--gray); margin-top:10px; font-weight:500;"></p>';
+    h+='</div>';
+
+    h+='<div class="card card-purple">';
+    h+='<div class="card-title"><span class="card-title-dot dot-purple"></span>Thêm khách hàng thủ công</div>';
+    h+='<button class="add-btn" id="add-customer-btn">'+icon("plus")+' Tạo khách hàng mới vào Pipeline</button>';
+    h+='</div>';
+
+    return h;
   }
-  if (!resp.ok) {
-    let detail = "";
-    try { const errBody = await resp.json(); detail = errBody?.error?.message || JSON.stringify(errBody); } catch (e2) { try { detail = await resp.text(); } catch (e3) { detail = ""; } }
-    throw new Error(`API lỗi ${resp.status}${detail ? ": " + detail : ""}`);
+
+  function getStatusClass(stage) {
+    if (stage === "Ký hợp đồng") return "status-won";
+    if (stage === "Mất khách") return "status-lost";
+    if (stage === "Tiếp cận" || stage === "Liên hệ") return "status-wait";
+    return "status-prog";
   }
-  const data = await resp.json();
-  const candidate = data?.candidates?.[0];
-  const text = (candidate?.content?.parts || []).map(p => p.text || "").join("\n");
-  if (!text) {
-    const blockReason = data?.promptFeedback?.blockReason;
-    throw new Error(blockReason ? `AI từ chối xử lý (${blockReason})` : "AI trả về phản hồi trống");
-  }
-  return text;
-}
-function parseJSONLoose(text) {
-  let clean = text.trim().replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
-  try { return JSON.parse(clean); } catch (e) {
-    const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-    if (match) { try { return JSON.parse(match[0]); } catch (e2) { return null; } }
-    return null;
-  }
-}
 
-/* ---------------- Toast ---------------- */
-function Toast({ message, type, onClose }) {
-  useEffect(() => { const t = setTimeout(onClose, 3200); return () => clearTimeout(t); }, []);
-  const color = type === "error" ? "var(--rose)" : type === "success" ? "var(--green)" : "var(--teal)";
-  return (
-    <div style={{
-      position: "fixed", bottom: 24, right: 24, background: "var(--bg-panel)", border: `1px solid ${color}`,
-      borderRadius: 11, padding: "12px 18px", color: "var(--text-hi)", fontSize: 13.5, zIndex: 200,
-      boxShadow: "0 8px 24px rgba(0,0,0,0.4)", maxWidth: 360
-    }}>
-      <span style={{ color, marginRight: 8 }}>●</span>{message}
-    </div>
-  );
-}
-
-/* ================= SIDEBAR ================= */
-function Sidebar({ active, setActive, count }) {
-  return (
-    <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-mark">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 16 0M7 12a5 5 0 0 1 10 0M2 12h2m16 0h2M12 17v3m-2 0h4" stroke="#0B1320" strokeWidth="2" strokeLinecap="round"/></svg>
-        </div>
-        <div>
-          <div className="brand-name">Đài Quan Sát</div>
-          <div className="brand-sub">CRM · CISCO SALES</div>
-        </div>
-      </div>
-      <div className="nav-section-label">Theo dõi</div>
-      {NAV.slice(0, 1).map(n => (
-        <button key={n.id} className={"nav-item" + (active === n.id ? " active" : "")} onClick={() => setActive(n.id)}>
-          <span className="nav-dot"></span>{n.label}
-        </button>
-      ))}
-      <div className="nav-section-label">Phân tích</div>
-      {NAV.slice(1).map(n => (
-        <button key={n.id} className={"nav-item" + (active === n.id ? " active" : "")} onClick={() => setActive(n.id)}>
-          <span className="nav-dot"></span>{n.label}
-        </button>
-      ))}
-      <div className="sidebar-foot">{count} khách hàng đang theo dõi</div>
-    </aside>
-  );
-}
-
-/* ================= INPUT PAGE ================= */
-function InputPage({ customers, setCustomers, notify }) {
-  const [form, setForm] = useState({ company: "", industry: INDUSTRIES[0], product: PRODUCTS[0], stage: STAGES[0], value: "", note: "", date: new Date().toISOString().slice(0, 10) });
-  const [editingId, setEditingId] = useState(null);
-  const [recording, setRecording] = useState(false);
-  const [recError, setRecError] = useState("");
-  const [aiProcessing, setAiProcessing] = useState(false);
-  const [highlightFields, setHighlightFields] = useState({});
-  const recognitionRef = useRef(null);
-  const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef(null);
-  const [importing, setImporting] = useState(false);
-
-  const resetForm = () => { setForm({ company: "", industry: INDUSTRIES[0], product: PRODUCTS[0], stage: STAGES[0], value: "", note: "", date: new Date().toISOString().slice(0, 10) }); setEditingId(null); };
-
-  const processTranscriptWithAI = async (rawText, attempt = 1) => {
-    if (!rawText || rawText.trim().length < 8) return;
-    setAiProcessing(true);
-    try {
-      const system = `Bạn xử lý bản ghi âm giọng nói tiếng Việt từ một nhân viên sale công nghệ (bán CRM và hệ thống tổng đài Cisco) vừa kết thúc cuộc gọi/gặp khách hàng. Nhiệm vụ:
-1. Viết lại nội dung thành ghi chú nhu cầu khách hàng mạch lạc, chuyên nghiệp: bỏ từ đệm (ờ, à, thì, kiểu), loại câu lặp/ngắc ngứ, GIỮ NGUYÊN toàn bộ thông tin thực tế, không bịa thêm.
-2. Trích xuất các trường có thể nhận ra TỪ CHÍNH nội dung (nếu không có thì để null, không suy đoán bừa): tên công ty/khách hàng, ngành, sản phẩm quan tâm (chỉ chọn 1 trong: "CRM", "Cisco (Tổng đài)", "CRM + Cisco"), giai đoạn sale (chỉ chọn 1 trong: "Tiếp cận","Liên hệ","Demo","Đề xuất/Báo giá","Đàm phán","Ký hợp đồng","Mất khách"), giá trị deal bằng số VND (chỉ số, không chữ, null nếu không nhắc tới).
-Trả lời CHỈ bằng JSON hợp lệ, không markdown, đúng cấu trúc:
-{"cleaned_note": "...", "company": null hoặc "...", "industry": null hoặc "...", "product": null hoặc "...", "stage": null hoặc "...", "value": null hoặc số}`;
-      const text = await callClaude(system, `Bản ghi âm gốc:\n"""${rawText}"""`, 800);
-      const parsed = parseJSONLoose(text);
-      if (!parsed) throw new Error("Không đọc được phản hồi AI (định dạng không hợp lệ)");
-      const filledFields = [];
-      const justFilled = {};
-      setForm(f => {
-        const next = { ...f, note: parsed.cleaned_note || f.note };
-        if (parsed.company && parsed.company.trim()) { next.company = parsed.company.trim(); filledFields.push("công ty"); justFilled.company = true; }
-        if (parsed.industry && INDUSTRIES.includes(parsed.industry)) { next.industry = parsed.industry; filledFields.push("ngành"); justFilled.industry = true; }
-        if (parsed.product && PRODUCTS.includes(parsed.product)) { next.product = parsed.product; filledFields.push("sản phẩm"); justFilled.product = true; }
-        if (parsed.stage && STAGES.includes(parsed.stage)) { next.stage = parsed.stage; filledFields.push("giai đoạn"); justFilled.stage = true; }
-        if (parsed.value) { next.value = parsed.value; filledFields.push("giá trị deal"); justFilled.value = true; }
-        return next;
-      });
-      setHighlightFields(justFilled);
-      setTimeout(() => setHighlightFields({}), 2500);
-      setRecError("");
-      if (filledFields.length > 0) notify(`AI đã tự điền: ${filledFields.join(", ")} — kiểm tra lại trước khi lưu`, "success");
-      else notify("AI đã làm sạch ghi chú, nhưng không nhận diện được thông tin công ty/ngành/giai đoạn cụ thể — bạn điền tay giúp các trường còn thiếu", "info");
-    } catch (e) {
-      console.error("Lỗi xử lý AI cho ghi âm (lần " + attempt + "):", e);
-      if (attempt < 2) {
-        setAiProcessing(false);
-        await new Promise(r => setTimeout(r, 600));
-        return processTranscriptWithAI(rawText, attempt + 1);
-      }
-      setRecError("AI xử lý ghi âm thất bại (" + (e.message || "lỗi không xác định") + "). Ghi chú gốc vẫn được giữ — bạn có thể sửa tay hoặc bấm ghi âm lại.");
-    } finally {
-      setAiProcessing(false);
+  function renderCustomers(){
+    var data=state.data, h='<div class="card card-purple" style="padding:0; overflow:hidden;">';
+    h+='<div style="padding: 1.25rem;"><div class="card-title" style="margin:0;"><span class="card-title-dot dot-purple"></span>Danh sách Pipeline Khách hàng</div></div>';
+    h+='<div style="overflow-x:auto"><table style="font-size:13px;"><thead><tr><th style="padding-left:1.25rem;">Ngày</th><th>Khách hàng</th><th>Ngành</th><th>Sản phẩm</th><th>Trạng thái</th><th style="text-align:right">Giá trị (VND)</th><th>Ghi chú</th><th style="padding-right:1.25rem;"></th></tr></thead><tbody>';
+    
+    if (data.customers.length === 0) {
+      h+='<tr><td colspan="8" style="text-align:center; padding: 3rem 1rem; color:var(--gray);">Chưa có dữ liệu khách hàng. Chuyển sang tab Tổng quan để thêm.</td></tr>';
     }
-  };
 
-  const transcriptRef = useRef("");
-  const silenceTimerRef = useRef(null);
-  const startRecording = () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { setRecError("Trình duyệt không hỗ trợ ghi âm giọng nói. Hãy dùng Chrome trên máy tính hoặc Android."); return; }
-    setRecError("");
-    const rec = new SR();
-    rec.lang = "vi-VN";
-    rec.continuous = true;
-    rec.interimResults = true;
-    let finalTranscript = "";
-    const resetSilenceTimer = () => {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => {
-        if (recognitionRef.current) recognitionRef.current.stop();
-      }, 3000);
-    };
-    rec.onresult = (e) => {
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + " ";
-        else interim += e.results[i][0].transcript;
-      }
-      transcriptRef.current = (finalTranscript + interim).trim();
-      setForm(f => ({ ...f, note: transcriptRef.current }));
-      resetSilenceTimer();
-    };
-    rec.onerror = (e) => {
-      clearTimeout(silenceTimerRef.current);
-      if (e.error !== "no-speech" && e.error !== "aborted") setRecError("Lỗi ghi âm: " + e.error);
-      setRecording(false);
-    };
-    rec.onend = () => {
-      clearTimeout(silenceTimerRef.current);
-      setRecording(false);
-      processTranscriptWithAI(transcriptRef.current);
-    };
-    recognitionRef.current = rec;
-    transcriptRef.current = "";
-    rec.start();
-    setRecording(true);
-    resetSilenceTimer();
-  };
-  const stopRecording = () => {
-    clearTimeout(silenceTimerRef.current);
-    recognitionRef.current && recognitionRef.current.stop();
-    setRecording(false);
-  };
+    // Sort by date descending
+    var sorted = clone(data.customers).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
 
+    sorted.forEach(function(c){
+      h+='<tr><td style="padding-left:1.25rem;"><input type="date" data-row="customers" data-id="'+c.id+'" data-field="date" value="'+esc(c.date)+'" style="width:125px;font-size:12px;" /></td>';
+      h+='<td><input class="needs-fill" data-row="customers" data-id="'+c.id+'" data-field="company" value="'+esc(c.company)+'" placeholder="Tên công ty" style="min-width:140px; font-weight:600;" /></td>';
+      h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="industry" style="min-width:110px">'+selOpts(INDUSTRIES,c.industry)+'</select></td>';
+      h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="product" style="min-width:130px">'+selOpts(PRODUCTS,c.product)+'</select></td>';
+      h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="stage" class="badge '+getStatusClass(c.stage)+'" style="width:130px; cursor:pointer; height:auto; padding:4px;">'+selOpts(STAGES,c.stage)+'</select></td>';
+      h+='<td style="text-align:right"><input data-row="customers" data-id="'+c.id+'" data-field="value" data-type="number" value="'+(c.value||0)+'" style="min-width:100px;text-align:right;font-weight:600;color:#0369A1;" /></td>';
+      h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="note" value="'+esc(c.note)+'" placeholder="Ghi chú thêm" style="min-width:150px;" /></td>';
+      h+='<td style="padding-right:1.25rem; text-align:right;"><button class="icon-btn" data-remove="customers" data-id="'+c.id+'">'+icon("trash")+'</button></td></tr>';
+    });
+    
+    h+='</tbody></table></div></div>';
+    return h;
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (recording) { notify("Đang ghi âm — hãy bấm dừng ghi và chờ AI xử lý xong trước khi lưu", "error"); return; }
-    if (aiProcessing) { notify("AI đang xử lý ghi chú, vui lòng chờ vài giây rồi thử lại", "error"); return; }
-    if (!form.company.trim() || !form.note.trim()) { notify("Cần ít nhất Tên công ty và Ghi chú nhu cầu", "error"); return; }
-    const rec = {
-      id: editingId || uid(),
-      company: form.company.trim(), industry: form.industry, product: form.product,
-      stage: form.stage, value: form.value ? Number(form.value) : null,
-      note: form.note.trim(), date: new Date(form.date).toISOString(), source: "manual"
-    };
-    if (editingId) {
-      setCustomers(prev => prev.map(c => c.id === editingId ? rec : c));
-      notify("Đã cập nhật khách hàng", "success");
-    } else {
-      setCustomers(prev => [rec, ...prev]);
-      notify("Đã thêm khách hàng mới", "success");
-    }
-    resetForm();
-  };
-
-  const handleEdit = (c) => { setForm({ company: c.company, industry: c.industry, product: c.product, stage: c.stage, value: c.value || "", note: c.note, date: c.date.slice(0, 10) }); setEditingId(c.id); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const handleDelete = (id) => { setCustomers(prev => prev.filter(c => c.id !== id)); notify("Đã xoá", "success"); };
-
-  const parseRows = (rows) => {
-    // Try to map flexible Vietnamese/English headers
-    const norm = (s) => (s || "").toString().toLowerCase().trim();
-    const findKey = (obj, keys) => Object.keys(obj).find(k => keys.some(kk => norm(k).includes(kk)));
-    const out = [];
-    for (const row of rows) {
-      const companyKey = findKey(row, ["công ty", "cong ty", "khách hàng", "khach hang", "company", "tên"]);
-      const industryKey = findKey(row, ["ngành", "nganh", "industry"]);
-      const productKey = findKey(row, ["sản phẩm", "san pham", "product"]);
-      const stageKey = findKey(row, ["giai đoạn", "giai doan", "stage", "trạng thái", "trang thai"]);
-      const valueKey = findKey(row, ["giá trị", "gia tri", "value", "deal"]);
-      const noteKey = findKey(row, ["ghi chú", "ghi chu", "note", "mô tả", "mo ta", "nhu cầu", "nhu cau"]);
-      const dateKey = findKey(row, ["ngày", "ngay", "date"]);
-      if (!companyKey && !noteKey) continue;
-      let rawVal = valueKey ? row[valueKey] : null;
-      let numVal = null;
-      if (rawVal != null) { numVal = Number(String(rawVal).replace(/[^\d.-]/g, "")); if (isNaN(numVal)) numVal = null; }
-      let rawDate = dateKey ? row[dateKey] : null;
-      let isoDate = new Date().toISOString();
-      if (rawDate) { const d = new Date(rawDate); if (!isNaN(d.getTime())) isoDate = d.toISOString(); }
-      out.push({
-        id: uid(),
-        company: companyKey ? String(row[companyKey] || "Không rõ tên") : "Không rõ tên",
-        industry: industryKey ? String(row[industryKey] || "Khác") : "Khác",
-        product: productKey ? String(row[productKey] || PRODUCTS[0]) : PRODUCTS[0],
-        stage: stageKey ? String(row[stageKey] || STAGES[0]) : STAGES[0],
-        value: numVal, note: noteKey ? String(row[noteKey] || "") : "",
-        date: isoDate, source: "import"
-      });
-    }
-    return out;
-  };
-
-  const handleFile = (file) => {
-    if (!file) return;
-    setImporting(true);
-    const ext = file.name.split(".").pop().toLowerCase();
-    if (ext === "csv") {
-      Papa.parse(file, {
-        header: true, skipEmptyLines: true,
-        complete: (res) => { const rows = parseRows(res.data); setCustomers(prev => [...rows, ...prev]); notify(`Đã nhập ${rows.length} khách hàng từ CSV`, "success"); setImporting(false); },
-        error: () => { notify("Không đọc được file CSV", "error"); setImporting(false); }
-      });
-    } else if (ext === "xlsx" || ext === "xls") {
+  function fileToGenerativePart(file) {
+    return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const wb = XLSX.read(e.target.result, { type: "array" });
-          const sheet = wb.Sheets[wb.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-          const rows = parseRows(json);
-          setCustomers(prev => [...rows, ...prev]);
-          notify(`Đã nhập ${rows.length} khách hàng từ Excel`, "success");
-        } catch (err) { notify("Không đọc được file Excel", "error"); }
-        setImporting(false);
-      };
-      reader.readAsArrayBuffer(file);
-    } else { notify("Chỉ hỗ trợ file .csv, .xlsx, .xls", "error"); setImporting(false); }
-  };
-
-  return (
-    <div>
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head">
-            <div>
-              <div className="card-title">{editingId ? "Cập nhật khách hàng" : "Thêm khách hàng / nhu cầu mới"}</div>
-              <div className="card-sub">Nhập tay hoặc nói trực tiếp ghi chú nhu cầu bằng tiếng Việt</div>
-            </div>
-            {editingId && <button className="btn btn-ghost" onClick={resetForm}>Hủy chỉnh sửa</button>}
-          </div>
-          <form onSubmit={handleSubmit}>
-            <div className="field-row">
-              <div className="field">
-                <label>Tên khách hàng / công ty *</label>
-                <input className={highlightFields.company ? "field-ai-filled" : ""} value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} placeholder="VD: Công ty TNHH Mekong Retail" />
-              </div>
-              <div className="field">
-                <label>Ngành</label>
-                <select className={highlightFields.industry ? "field-ai-filled" : ""} value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}>
-                  {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="field-row">
-              <div className="field">
-                <label>Sản phẩm quan tâm</label>
-                <select className={highlightFields.product ? "field-ai-filled" : ""} value={form.product} onChange={e => setForm(f => ({ ...f, product: e.target.value }))}>
-                  {PRODUCTS.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
-              <div className="field">
-                <label>Giai đoạn sale</label>
-                <select className={highlightFields.stage ? "field-ai-filled" : ""} value={form.stage} onChange={e => setForm(f => ({ ...f, stage: e.target.value }))}>
-                  {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="field-row">
-              <div className="field">
-                <label>Giá trị deal (VND)</label>
-                <input className={highlightFields.value ? "field-ai-filled" : ""} type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} placeholder="VD: 150000000" />
-              </div>
-              <div className="field">
-                <label>Ngày ghi nhận</label>
-                <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-              </div>
-            </div>
-            <div className="field">
-              <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span>Ghi chú nhu cầu *</span>
-                <button type="button" className={"btn btn-rec" + (recording ? " recording" : "")} style={{ padding: "4px 10px", fontSize: 11.5, opacity: aiProcessing ? 0.6 : 1 }} onClick={recording ? stopRecording : startRecording} disabled={aiProcessing}>
-                  {recording ? (
-                    <span className="waveform"><span style={{ animationDelay: "0s" }}></span><span style={{ animationDelay: ".15s" }}></span><span style={{ animationDelay: ".3s" }}></span><span style={{ animationDelay: ".1s" }}></span></span>
-                  ) : aiProcessing ? <span className="loader-dot"></span> : "●"} {recording ? "Đang ghi…" : aiProcessing ? "AI đang xử lý…" : "Ghi âm tiếng Việt"}
-                </button>
-              </label>
-              <textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} placeholder="VD: Khách phàn nàn tổng đài nghẽn giờ cao điểm, cần nâng cấp gấp..." disabled={aiProcessing} style={aiProcessing ? { opacity: 0.6 } : {}} />
-              {recording && <div style={{ color: "var(--text-low)", fontSize: 12, marginTop: 6 }}>Đang nghe… tự dừng sau 3 giây im lặng, hoặc bấm nút để dừng ngay</div>}
-              {aiProcessing && <div style={{ color: "var(--teal)", fontSize: 12, marginTop: 6 }}>✦ AI đang làm sạch ghi chú và trích xuất thông tin (công ty, ngành, giai đoạn, giá trị)…</div>}
-              {recError && <div style={{ color: "var(--rose)", fontSize: 12, marginTop: 6 }}>{recError}</div>}
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center", opacity: (recording || aiProcessing) ? 0.5 : 1, cursor: (recording || aiProcessing) ? "not-allowed" : "pointer" }} disabled={recording || aiProcessing}>
-              {recording ? "Đang ghi âm — bấm dừng trước" : aiProcessing ? "Đang chờ AI xử lý…" : editingId ? "Lưu thay đổi" : "Thêm vào hệ thống"}
-            </button>
-          </form>
-        </div>
-
-        <div>
-          <div className="card">
-            <div className="card-head">
-              <div>
-                <div className="card-title">Nhập từ file Excel / CSV</div>
-                <div className="card-sub">Hỗ trợ cột: tên công ty, ngành, sản phẩm, giai đoạn, giá trị, ghi chú, ngày</div>
-              </div>
-            </div>
-            <div
-              className={"upload-zone" + (dragActive ? " drag" : "")}
-              onDragOver={e => { e.preventDefault(); setDragActive(true); }}
-              onDragLeave={() => setDragActive(false)}
-              onDrop={e => { e.preventDefault(); setDragActive(false); handleFile(e.dataTransfer.files[0]); }}
-              onClick={() => fileInputRef.current.click()}
-              style={{ cursor: "pointer" }}
-            >
-              <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={e => handleFile(e.target.files[0])} />
-              <div style={{ fontSize: 26, marginBottom: 8, color: "var(--text-low)" }}>⇧</div>
-              <div style={{ fontSize: 13.5, color: "var(--text-mid)", marginBottom: 4 }}>{importing ? "Đang xử lý file…" : "Kéo thả file vào đây, hoặc bấm để chọn"}</div>
-              <div style={{ fontSize: 11.5, color: "var(--text-low)" }}>.csv .xlsx .xls</div>
-            </div>
-          </div>
-          <div className="card" style={{ marginBottom: 0 }}>
-            <div className="card-title" style={{ marginBottom: 10 }}>Mẹo nhập liệu nhanh</div>
-            <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-mid)", fontSize: 12.8, lineHeight: 1.7 }}>
-              <li>Ghi âm trực tiếp ngay sau cuộc gọi để không quên chi tiết nhu cầu.</li>
-              <li>Mô tả nhu cầu cụ thể (đau ở đâu, vì sao) giúp AI gợi ý chính xác hơn ở tab "Gợi ý AI".</li>
-              <li>File Excel có thể để nguyên tiêu đề tiếng Việt, hệ thống tự nhận diện cột.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-head">
-          <div className="card-title">Danh sách khách hàng ({customers.length})</div>
-        </div>
-        {customers.length === 0 ? (
-          <div className="empty-state">
-            <div className="em-icon">◎</div>
-            <h3>Chưa có dữ liệu</h3>
-            <p>Thêm khách hàng đầu tiên bằng form bên trên hoặc nhập file Excel/CSV.</p>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table>
-              <thead><tr><th>Công ty</th><th>Ngành</th><th>Sản phẩm</th><th>Giai đoạn</th><th>Giá trị</th><th>Ghi chú</th><th>Ngày</th><th></th></tr></thead>
-              <tbody>
-                {customers.slice(0, 50).map(c => (
-                  <tr key={c.id} className="row-hover">
-                    <td className="strong">{c.company}</td>
-                    <td>{c.industry}</td>
-                    <td>{c.product}</td>
-                    <td><span className="pill" style={{ background: STAGE_COLORS[c.stage] + "22", color: STAGE_COLORS[c.stage] }}>{c.stage}</span></td>
-                    <td>{fmtVND(c.value)}</td>
-                    <td style={{ maxWidth: 280 }}>{c.note.length > 90 ? c.note.slice(0, 90) + "…" : c.note}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{fmtDate(c.date)}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <button className="btn btn-ghost" style={{ padding: "5px 9px", fontSize: 11.5, marginRight: 6 }} onClick={() => handleEdit(c)}>Sửa</button>
-                      <button className="btn btn-danger" style={{ padding: "5px 9px", fontSize: 11.5 }} onClick={() => handleDelete(c.id)}>Xoá</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {customers.length > 50 && <div style={{ textAlign: "center", color: "var(--text-low)", fontSize: 12, marginTop: 12 }}>Hiển thị 50/{customers.length} khách hàng gần nhất</div>}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ================= DASHBOARD PAGE ================= */
-function DashboardPage({ customers, range, setRange }) {
-  const filtered = useMemo(() => filterByRange(customers, range), [customers, range]);
-
-  const kpis = useMemo(() => {
-    const total = filtered.length;
-    const won = filtered.filter(c => c.stage === "Ký hợp đồng");
-    const lost = filtered.filter(c => c.stage === "Mất khách");
-    const wonValue = won.reduce((s, c) => s + (c.value || 0), 0);
-    const pipelineValue = filtered.filter(c => c.stage !== "Mất khách").reduce((s, c) => s + (c.value || 0), 0);
-    const winRate = total ? Math.round((won.length / total) * 100) : 0;
-    return { total, wonCount: won.length, lostCount: lost.length, wonValue, pipelineValue, winRate };
-  }, [filtered]);
-
-  const stageData = useMemo(() => {
-    return STAGES.map(s => ({ name: s, value: filtered.filter(c => c.stage === s).length }));
-  }, [filtered]);
-
-  const productData = useMemo(() => {
-    return PRODUCTS.map(p => ({ name: p, value: filtered.filter(c => c.product === p).length }));
-  }, [filtered]);
-
-  const monthlyTrend = useMemo(() => buildMonthlyTrend(filtered), [filtered]);
-
-  const industryData = useMemo(() => {
-    const map = {};
-    filtered.forEach(c => { map[c.industry] = (map[c.industry] || 0) + 1; });
-    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
-  }, [filtered]);
-
-  const PIE_COLORS = ["#2DD4BF", "#818CF8", "#F5A524"];
-
-  return (
-    <div>
-      <RangeBar range={range} setRange={setRange} />
-      <div className="kpi-grid">
-        <KpiCard label="Tổng khách hàng theo dõi" value={kpis.total} sub={`${filtered.length} bản ghi trong kỳ`} />
-        <KpiCard label="Tỷ lệ chốt hợp đồng" value={kpis.winRate + "%"} sub={`${kpis.wonCount} ký / ${kpis.lostCount} mất`} accent={kpis.winRate >= 30 ? "up" : "down"} />
-        <KpiCard label="Giá trị đã ký" value={fmtVND(kpis.wonValue) + " ₫"} sub="Tổng deal đã chốt" />
-        <KpiCard label="Giá trị pipeline" value={fmtVND(kpis.pipelineValue) + " ₫"} sub="Đang theo đuổi (chưa mất)" />
-      </div>
-
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head">
-            <div><div className="card-title">Xu hướng nhu cầu theo thời gian</div><div className="card-sub">Số lượng khách hàng tiếp cận mỗi giai đoạn theo tháng</div></div>
-          </div>
-          {monthlyTrend.length === 0 ? <EmptyChart /> : (
-            <AreaChartSVG data={monthlyTrend.map(d => ({ x: d.month, y: d.count }))} color="#2DD4BF" height={280} />
-          )}
-        </div>
-
-        <div className="card">
-          <div className="card-head"><div className="card-title">Phân bổ theo sản phẩm</div></div>
-          {filtered.length === 0 ? <EmptyChart /> : (
-            <PieChartSVG data={productData} colors={PIE_COLORS} height={280} />
-          )}
-        </div>
-      </div>
-
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head"><div className="card-title">Khách hàng theo giai đoạn (funnel)</div></div>
-          {filtered.length === 0 ? <EmptyChart /> : (
-            <BarChartSVG data={stageData} layout="horizontal" colorFor={(name) => STAGE_COLORS[name]} height={260} />
-          )}
-        </div>
-        <div className="card">
-          <div className="card-head"><div className="card-title">Top ngành quan tâm</div></div>
-          {industryData.length === 0 ? <EmptyChart /> : (
-            <BarChartSVG data={industryData} colorFor={() => "#818CF8"} angledLabels height={260} />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EmptyChart() {
-  return <div className="empty-state" style={{ padding: "40px 20px" }}><p>Chưa có dữ liệu trong kỳ này</p></div>;
-}
-
-function KpiCard({ label, value, sub, accent }) {
-  return (
-    <div className="kpi-card">
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-      {sub && <div className={"kpi-delta" + (accent ? " " + accent : "")}>{sub}</div>}
-    </div>
-  );
-}
-
-function RangeBar({ range, setRange }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-      <div className="seg-toggle">
-        {[{ k: "3m", l: "3 tháng" }, { k: "6m", l: "6 tháng" }, { k: "12m", l: "12 tháng" }, { k: "all", l: "Tất cả" }].map(o => (
-          <button key={o.k} className={"seg-btn" + (range === o.k ? " active" : "")} onClick={() => setRange(o.k)}>{o.l}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function filterByRange(customers, range) {
-  if (range === "all") return customers;
-  const months = range === "3m" ? 3 : range === "6m" ? 6 : 12;
-  const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - months);
-  return customers.filter(c => new Date(c.date) >= cutoff);
-}
-
-function buildMonthlyTrend(customers) {
-  const map = {};
-  customers.forEach(c => { const k = monthKey(c.date); map[k] = (map[k] || 0) + 1; });
-  return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).map(([k, v]) => {
-    const [y, m] = k.split("-");
-    return { month: `${m}/${y.slice(2)}`, count: v };
-  });
-}
-
-/* ================= TRENDS PAGE ================= */
-function TrendsPage({ customers, range, setRange }) {
-  const filtered = useMemo(() => filterByRange(customers, range), [customers, range]);
-
-  const stageOverTime = useMemo(() => {
-    const map = {};
-    filtered.forEach(c => {
-      const k = monthKey(c.date);
-      if (!map[k]) map[k] = { month: k };
-      map[k][c.stage] = (map[k][c.stage] || 0) + 1;
+      reader.onloadend = () => resolve({ inlineData: { data: reader.result.split(',')[1], mimeType: file.type } });
+      reader.readAsDataURL(file);
     });
-    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).map(([k, v]) => {
-      const [y, m] = k.split("-");
-      return { ...v, month: `${m}/${y.slice(2)}` };
-    });
-  }, [filtered]);
+  }
 
-  const productOverTime = useMemo(() => {
-    const map = {};
-    filtered.forEach(c => {
-      const k = monthKey(c.date);
-      if (!map[k]) map[k] = { month: k };
-      map[k][c.product] = (map[k][c.product] || 0) + 1;
-    });
-    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).map(([k, v]) => {
-      const [y, m] = k.split("-");
-      return { ...v, month: `${m}/${y.slice(2)}` };
-    });
-  }, [filtered]);
+  async function processCustomerWithAI() {
+    const inputEl = document.getElementById("ai-input");
+    const fileEl = document.getElementById("ai-file");
+    const statusEl = document.getElementById("ai-status");
+    const text = inputEl.value.trim();
+    const file = fileEl.files[0];
+    
+    if (!text && !file) { statusEl.innerHTML = "❌ Hãy nhập câu lệnh hoặc đính hình ảnh ghi chú cuộc họp."; return; }
+    document.getElementById("ai-btn").disabled = true;
+    statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Gemini Pro 1.5 đang bóc tách dữ liệu Sale...';
 
-  const valueByMonth = useMemo(() => {
-    const map = {};
-    filtered.forEach(c => {
-      const k = monthKey(c.date);
-      map[k] = (map[k] || 0) + (c.value || 0);
-    });
-    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).map(([k, v]) => {
-      const [y, m] = k.split("-");
-      return { month: `${m}/${y.slice(2)}`, value: Math.round(v / 1e6) };
-    });
-  }, [filtered]);
+    // ĐÂY LÀ ĐƯỜNG DẪN KẾT NỐI GEMINI HOẠT ĐỘNG CHUẨN XÁC TỪ FILE CŨ
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+    let parts = [];
 
-  const industryRadar = useMemo(() => {
-    const map = {};
-    filtered.forEach(c => { map[c.industry] = (map[c.industry] || 0) + 1; });
-    return Object.entries(map).map(([name, value]) => ({ name, value })).slice(0, 7);
-  }, [filtered]);
+    const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài (Contact Center).
+    Hãy đọc ghi chú từ nhân viên kinh doanh (văn bản hoặc hình ảnh) và bóc tách thành DUY NHẤT một object JSON (không dùng backtick, không có code block định dạng):
+    - "date": Ngày tháng năm định dạng YYYY-MM-DD (mặc định lấy ngày hôm nay nếu không nhắc).
+    - "company": Tên công ty/khách hàng.
+    - "industry": Phải là 1 trong: ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"].
+    - "product": Phải là 1 trong: ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"].
+    - "stage": Phải là 1 trong: ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"].
+    - "value": Giá trị hợp đồng bằng số nguyên (ví dụ: 150 triệu thì ghi 150000000). Nếu chưa có thì để 0.
+    - "note": Ghi chú nội dung yêu cầu nổi bật của khách.`;
 
-  return (
-    <div>
-      <RangeBar range={range} setRange={setRange} />
-      <div className="card">
-        <div className="card-head"><div><div className="card-title">Xu hướng giai đoạn sale theo tháng</div><div className="card-sub">Theo dõi khách hàng di chuyển qua từng giai đoạn funnel</div></div></div>
-        {stageOverTime.length === 0 ? <EmptyChart /> : (
-          <MultiLineChartSVG data={stageOverTime} series={STAGES.map(s => ({ key: s, color: STAGE_COLORS[s] }))} height={300} />
-        )}
-      </div>
+    parts.push({ text: prompt });
+    if (text) parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
+    if (file) { const imgData = await fileToGenerativePart(file); parts.push(imgData); }
 
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head"><div className="card-title">Nhu cầu CRM vs Cisco theo thời gian</div></div>
-          {productOverTime.length === 0 ? <EmptyChart /> : (
-            <StackedBarChartSVG data={productOverTime} series={PRODUCTS.map((p, i) => ({ key: p, color: ["#2DD4BF", "#818CF8", "#F5A524"][i] }))} height={260} />
-          )}
-        </div>
-        <div className="card">
-          <div className="card-head"><div className="card-title">Giá trị deal theo tháng (triệu ₫)</div></div>
-          {valueByMonth.length === 0 ? <EmptyChart /> : (
-            <AreaChartSVG data={valueByMonth.map(d => ({ x: d.month, y: d.value }))} color="#F5A524" height={260} valueSuffix=" tr ₫" />
-          )}
-        </div>
-      </div>
-
-      <div className="card" style={{ marginBottom: 0 }}>
-        <div className="card-head"><div className="card-title">Bản đồ quan tâm theo ngành</div></div>
-        {industryRadar.length === 0 ? <EmptyChart /> : (
-          <RadarChartSVG data={industryRadar} height={300} color="#2DD4BF" />
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ================= DEEP DIVE PAGE ================= */
-function DeepDivePage({ customers }) {
-  const [selectedStage, setSelectedStage] = useState("all");
-  const [selectedProduct, setSelectedProduct] = useState("all");
-  const [search, setSearch] = useState("");
-
-  const filtered = useMemo(() => {
-    return customers.filter(c => {
-      if (selectedStage !== "all" && c.stage !== selectedStage) return false;
-      if (selectedProduct !== "all" && c.product !== selectedProduct) return false;
-      if (search && !(c.company + c.note + c.industry).toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
-  }, [customers, selectedStage, selectedProduct, search]);
-
-  const lostAnalysis = useMemo(() => {
-    const lost = customers.filter(c => c.stage === "Mất khách");
-    const byIndustry = {};
-    lost.forEach(c => { byIndustry[c.industry] = (byIndustry[c.industry] || 0) + 1; });
-    return { count: lost.length, byIndustry: Object.entries(byIndustry).sort((a, b) => b[1] - a[1]) };
-  }, [customers]);
-
-  const avgDealByProduct = useMemo(() => {
-    return PRODUCTS.map(p => {
-      const items = customers.filter(c => c.product === p && c.value);
-      const avg = items.length ? items.reduce((s, c) => s + c.value, 0) / items.length : 0;
-      return { name: p, value: Math.round(avg / 1e6) };
-    });
-  }, [customers]);
-
-  const stuckDeals = useMemo(() => {
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
-    return customers.filter(c => c.stage !== "Ký hợp đồng" && c.stage !== "Mất khách" && new Date(c.date) < cutoff)
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [customers]);
-
-  return (
-    <div>
-      <div className="grid-3" style={{ marginBottom: 20 }}>
-        <div className="kpi-card">
-          <div className="kpi-label">Khách hàng đã mất</div>
-          <div className="kpi-value" style={{ color: "var(--rose)" }}>{lostAnalysis.count}</div>
-          <div className="kpi-delta down">{lostAnalysis.byIndustry[0] ? `Nhiều nhất: ${lostAnalysis.byIndustry[0][0]}` : "—"}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Deal trị giá TB — CRM</div>
-          <div className="kpi-value">{fmtVND((avgDealByProduct[0] && avgDealByProduct[0].value * 1e6) || 0)}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Deal bị "đứng" &gt; 30 ngày</div>
-          <div className="kpi-value" style={{ color: "var(--amber)" }}>{stuckDeals.length}</div>
-          <div className="kpi-delta">Cần follow-up gấp</div>
-        </div>
-      </div>
-
-      {stuckDeals.length > 0 && (
-        <div className="card">
-          <div className="card-head"><div><div className="card-title">⚠ Deal đang bị đứng (chưa cập nhật &gt; 30 ngày)</div><div className="card-sub">Ưu tiên liên hệ lại để tránh mất khách</div></div></div>
-          <div style={{ overflowX: "auto" }}>
-            <table>
-              <thead><tr><th>Công ty</th><th>Giai đoạn</th><th>Giá trị</th><th>Lần cập nhật cuối</th><th>Ghi chú</th></tr></thead>
-              <tbody>
-                {stuckDeals.slice(0, 8).map(c => (
-                  <tr key={c.id} className="row-hover">
-                    <td className="strong">{c.company}</td>
-                    <td><span className="pill" style={{ background: STAGE_COLORS[c.stage] + "22", color: STAGE_COLORS[c.stage] }}>{c.stage}</span></td>
-                    <td>{fmtVND(c.value)}</td>
-                    <td>{fmtDate(c.date)}</td>
-                    <td style={{ maxWidth: 260 }}>{c.note.slice(0, 70)}…</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      <div className="card">
-        <div className="card-head">
-          <div className="card-title">Bộ lọc tra cứu chi tiết</div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <select value={selectedStage} onChange={e => setSelectedStage(e.target.value)} style={{ background: "var(--bg-panel)", border: "1px solid var(--line)", color: "var(--text-hi)", borderRadius: 8, padding: "7px 10px", fontSize: 12.5 }}>
-              <option value="all">Tất cả giai đoạn</option>{STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <select value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)} style={{ background: "var(--bg-panel)", border: "1px solid var(--line)", color: "var(--text-hi)", borderRadius: 8, padding: "7px 10px", fontSize: 12.5 }}>
-              <option value="all">Tất cả sản phẩm</option>{PRODUCTS.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo tên, ngành, từ khoá..." style={{ background: "var(--bg-panel)", border: "1px solid var(--line)", color: "var(--text-hi)", borderRadius: 8, padding: "7px 10px", fontSize: 12.5, minWidth: 200 }} />
-          </div>
-        </div>
-        <div style={{ color: "var(--text-low)", fontSize: 12, marginBottom: 10 }}>{filtered.length} kết quả</div>
-        <div style={{ overflowX: "auto", maxHeight: 420, overflowY: "auto" }}>
-          <table>
-            <thead><tr><th>Công ty</th><th>Ngành</th><th>Sản phẩm</th><th>Giai đoạn</th><th>Giá trị</th><th>Ghi chú nhu cầu</th><th>Ngày</th></tr></thead>
-            <tbody>
-              {filtered.map(c => (
-                <tr key={c.id} className="row-hover">
-                  <td className="strong">{c.company}</td>
-                  <td>{c.industry}</td>
-                  <td>{c.product}</td>
-                  <td><span className="pill" style={{ background: STAGE_COLORS[c.stage] + "22", color: STAGE_COLORS[c.stage] }}>{c.stage}</span></td>
-                  <td>{fmtVND(c.value)}</td>
-                  <td style={{ maxWidth: 320 }}>{c.note}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>{fmtDate(c.date)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ================= AI INSIGHTS PAGE ================= */
-function AIPage({ customers, notify }) {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [lastRunAt, setLastRunAt] = useState(null);
-  const [mode, setMode] = useState("full"); // full | ideas | painpoints
-
-  useEffect(() => {
-    let unsub = null;
-    (async () => {
-      const ok = await waitForFirebase();
-      if (!ok || !window.__firebase) return;
-      unsub = window.__firebase.onAICache((cache) => {
-        if (cache && cache.result) { setResult(cache.result); setLastRunAt(cache.at); }
-      });
-    })();
-    return () => { if (unsub) unsub(); };
-  }, []);
-
-  const runAnalysis = async () => {
-    if (customers.length === 0) { notify("Chưa có dữ liệu khách hàng để phân tích", "error"); return; }
-    setLoading(true); setError("");
     try {
-      const sample = customers.slice(0, 80).map(c => ({
-        company: c.company, industry: c.industry, product: c.product, stage: c.stage, value: c.value, note: c.note, date: c.date.slice(0, 10)
-      }));
-      const system = `Bạn là chuyên gia phân tích sale công nghệ B2B tại Việt Nam, chuyên sâu về CRM và hệ thống tổng đài Cisco. Bạn nhận dữ liệu khách hàng (JSON) gồm ghi chú nhu cầu dạng văn bản tiếng Việt. Nhiệm vụ: phân tích sâu (deep-dive) và đưa ra khuyến nghị, gợi ý ý tưởng sản phẩm/bán hàng cụ thể, thực tế, có thể hành động ngay. Trả lời CHỈ bằng JSON hợp lệ, không thêm văn bản nào khác, không markdown, theo đúng cấu trúc sau:
-{
-  "summary": "2-3 câu tóm tắt tình hình tổng quan bằng tiếng Việt",
-  "pain_points": [{"theme": "tên chủ đề pain point", "frequency": "cao/trung bình/thấp", "detail": "giải thích ngắn", "affected_segment": "phân khúc/ngành bị ảnh hưởng nhiều nhất"}],
-  "trends": [{"title": "tên xu hướng", "detail": "giải thích", "direction": "tăng/giảm/ổn định"}],
-  "segments": [{"name": "tên phân khúc khách hàng", "characteristic": "đặc điểm nhu cầu chính", "opportunity": "cơ hội bán hàng"}],
-  "risk_alerts": [{"issue": "vấn đề/rủi ro", "why": "lý do", "action": "hành động đề xuất"}],
-  "product_ideas": [{"idea": "tên ý tưởng sản phẩm/tính năng", "rationale": "vì sao nên làm, dựa trên data nào", "target_segment": "đối tượng phù hợp"}],
-  "sales_ideas": [{"idea": "tên ý tưởng chiến thuật bán hàng/chương trình", "rationale": "lý do", "expected_impact": "tác động kỳ vọng"}]
-}
-Mỗi mảng tối đa 5 phần tử, ưu tiên chất lượng và tính cụ thể hơn số lượng. Luôn dựa trên dữ liệu được cung cấp, không bịa thông tin ngoài data.`;
-      const userMsg = `Dữ liệu khách hàng (${sample.length} bản ghi):\n${JSON.stringify(sample)}\n\nHãy phân tích sâu theo đúng cấu trúc JSON yêu cầu.`;
-      const text = await callClaude(system, userMsg, 3500);
-      const parsed = parseJSONLoose(text);
-      if (!parsed) throw new Error("Không phân tích được kết quả AI trả về");
-      setResult(parsed);
-      const now = new Date().toISOString();
-      setLastRunAt(now);
-      await saveAICache({ result: parsed, at: now });
-      notify("Phân tích AI hoàn tất", "success");
+      const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: parts }] }) });
+      const result = await response.json();
+      let cleanJson = result.candidates[0].content.parts[0].text.trim();
+      
+      if (cleanJson.startsWith("```")) { cleanJson = cleanJson.replace(/^```json|```$/g, "").trim(); }
+      const parsed = JSON.parse(cleanJson);
+
+      const d = new Date();
+      const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+
+      addRow("customers", function() {
+        return { 
+          id: uid(), 
+          date: parsed.date || todayStr, 
+          company: parsed.company || "Khách hàng mới", 
+          industry: INDUSTRIES.includes(parsed.industry) ? parsed.industry : "Khác", 
+          product: PRODUCTS.includes(parsed.product) ? parsed.product : "Cisco (Tổng đài)", 
+          stage: STAGES.includes(parsed.stage) ? parsed.stage : "Tiếp cận", 
+          value: parsed.value || 0, 
+          note: parsed.note || "" 
+        };
+      });
+
+      inputEl.value = ""; fileEl.value = "";
+      statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Phân tích thành công! Dữ liệu đã đẩy thẳng vào Pipeline Firebase.</span>';
     } catch (e) {
       console.error(e);
-      setError(e.message || "Có lỗi xảy ra khi phân tích");
-      notify("Phân tích AI thất bại, thử lại sau", "error");
-    } finally { setLoading(false); }
-  };
+      statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi: AI không bóc tách được. Vui lòng nói rõ hơn (Tên công ty, sản phẩm, ngành).</span>';
+    } finally { document.getElementById("ai-btn").disabled = false; }
+  }
 
-  return (
-    <div>
-      <div className="card">
-        <div className="card-head">
-          <div>
-            <div className="card-title">Phân tích sâu bằng AI</div>
-            <div className="card-sub">
-              {lastRunAt ? `Lần phân tích gần nhất: ${new Date(lastRunAt).toLocaleString("vi-VN")}` : "Chưa từng phân tích"} · dựa trên {Math.min(customers.length, 80)} bản ghi gần nhất
-            </div>
-          </div>
-          <button className="btn btn-primary" onClick={runAnalysis} disabled={loading}>
-            {loading ? <><span className="loader-dot"></span>Đang phân tích…</> : "✦ Phân tích ngay"}
-          </button>
-        </div>
-        {error && <div style={{ color: "var(--rose)", fontSize: 13 }}>{error}</div>}
-        {!result && !loading && (
-          <div className="empty-state">
-            <div className="em-icon">✦</div>
-            <h3>Sẵn sàng phân tích</h3>
-            <p>Bấm "Phân tích ngay" để AI đọc toàn bộ ghi chú nhu cầu và đưa ra pain points, xu hướng, và gợi ý ý tưởng.</p>
-          </div>
-        )}
-        {loading && (
-          <div className="empty-state">
-            <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 14 }}>
-              <span className="loader-dot"></span><span className="loader-dot" style={{ animationDelay: ".2s" }}></span><span className="loader-dot" style={{ animationDelay: ".4s" }}></span>
-            </div>
-            <p>AI đang đọc ghi chú nhu cầu và tổng hợp insight, vài giây nữa...</p>
-          </div>
-        )}
-      </div>
+  function startSpeechRecognition() {
+    const micBtn = document.getElementById("mic-btn");
+    const inputEl = document.getElementById("ai-input");
+    const statusEl = document.getElementById("ai-status");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-      {result && !loading && (
-        <>
-          <div className="card">
-            <div className="card-title" style={{ marginBottom: 10 }}>Tóm tắt tình hình</div>
-            <p style={{ color: "var(--text-mid)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{result.summary}</p>
-          </div>
+    if (!SpeechRecognition) { statusEl.innerHTML = "❌ Trình duyệt không hỗ trợ Mic. Hãy sử dụng Chrome/Safari."; return; }
 
-          <div className="grid-2">
-            <SectionList title="Pain points nổi bật" items={result.pain_points} color="var(--rose)" render={(it, i) => (
-              <div className="insight-item" key={i}>
-                <div className="insight-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="insight-body">
-                  <p><strong>{it.theme}</strong> <span className="tag-chip" style={{ borderColor: "var(--rose)", color: "var(--rose)" }}>{it.frequency}</span></p>
-                  <p>{it.detail}</p>
-                  {it.affected_segment && <p style={{ color: "var(--text-low)", fontSize: 12 }}>Phân khúc ảnh hưởng: {it.affected_segment}</p>}
-                </div>
-              </div>
-            )} />
-            <SectionList title="Xu hướng phát hiện" items={result.trends} color="var(--teal)" render={(it, i) => (
-              <div className="insight-item" key={i}>
-                <div className="insight-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="insight-body">
-                  <p><strong>{it.title}</strong> <span className="tag-chip" style={{ borderColor: it.direction === "tăng" ? "var(--green)" : it.direction === "giảm" ? "var(--rose)" : "var(--text-low)", color: it.direction === "tăng" ? "var(--green)" : it.direction === "giảm" ? "var(--rose)" : "var(--text-low)" }}>{it.direction}</span></p>
-                  <p>{it.detail}</p>
-                </div>
-              </div>
-            )} />
-          </div>
+    const recognition = new SpeechRecognition();
+    recognition.lang = "vi-VN";
+    recognition.interimResults = false;
 
-          <div className="grid-2">
-            <SectionList title="Phân khúc khách hàng" items={result.segments} color="var(--indigo)" render={(it, i) => (
-              <div className="insight-item" key={i}>
-                <div className="insight-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="insight-body">
-                  <p><strong>{it.name}</strong></p>
-                  <p>{it.characteristic}</p>
-                  <p style={{ color: "var(--teal)", fontSize: 12.5 }}>Cơ hội: {it.opportunity}</p>
-                </div>
-              </div>
-            )} />
-            <SectionList title="Cảnh báo rủi ro" items={result.risk_alerts} color="var(--amber)" render={(it, i) => (
-              <div className="insight-item" key={i}>
-                <div className="insight-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="insight-body">
-                  <p><strong>{it.issue}</strong></p>
-                  <p>{it.why}</p>
-                  <p style={{ color: "var(--amber)", fontSize: 12.5 }}>→ {it.action}</p>
-                </div>
-              </div>
-            )} />
-          </div>
+    recognition.onstart = () => {
+      micBtn.style.background = "#FEE2E2"; micBtn.style.color = "#DC2626"; micBtn.style.borderColor = "#DC2626"; micBtn.innerHTML = "🛑 Đang thu âm...";
+      statusEl.innerHTML = "🎙️ Đang nghe... Hãy nói rõ tên Công ty và giá trị deal.";
+    };
+    recognition.onerror = () => { statusEl.innerHTML = "❌ Lỗi ghi âm. Hãy kiểm tra lại quyền truy cập Mic."; resetMic(); };
+    recognition.onend = () => { resetMic(); };
+    
+    recognition.onresult = (e) => {
+      const resultText = e.results[0][0].transcript;
+      inputEl.value = resultText;
+      statusEl.innerHTML = `✓ Đã bắt chữ: "${resultText}". Bấm <b>Xử lý ngay</b> để lên Cloud.`;
+    };
 
-          <div className="grid-2" style={{ marginBottom: 0 }}>
-            <SectionList title="💡 Ý tưởng sản phẩm" items={result.product_ideas} color="var(--teal)" render={(it, i) => (
-              <div className="insight-item" key={i}>
-                <div className="insight-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="insight-body">
-                  <p><strong>{it.idea}</strong></p>
-                  <p>{it.rationale}</p>
-                  {it.target_segment && <p style={{ color: "var(--text-low)", fontSize: 12 }}>Đối tượng: {it.target_segment}</p>}
-                </div>
-              </div>
-            )} />
-            <SectionList title="🚀 Ý tưởng bán hàng" items={result.sales_ideas} color="var(--indigo)" render={(it, i) => (
-              <div className="insight-item" key={i}>
-                <div className="insight-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="insight-body">
-                  <p><strong>{it.idea}</strong></p>
-                  <p>{it.rationale}</p>
-                  {it.expected_impact && <p style={{ color: "var(--green)", fontSize: 12.5 }}>Tác động kỳ vọng: {it.expected_impact}</p>}
-                </div>
-              </div>
-            )} />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
+    function resetMic() { micBtn.style.background = "#fff"; micBtn.style.color = "#0284C7"; micBtn.style.borderColor = "#0284C7"; micBtn.innerHTML = "🎙️ Nói"; }
+    recognition.start();
+  }
 
-function SectionList({ title, items, render }) {
-  return (
-    <div className="card">
-      <div className="card-title" style={{ marginBottom: 6 }}>{title}</div>
-      {(!items || items.length === 0) ? <p style={{ color: "var(--text-low)", fontSize: 13 }}>Không có dữ liệu nổi bật.</p> : items.map(render)}
-    </div>
-  );
-}
+  function captureFocus(){
+    var el=document.activeElement; if(!el||!root.contains(el)) return null;
+    var info={selector:null,ss:el.selectionStart,se:el.selectionEnd};
+    if(el.hasAttribute("data-path")) info.selector='[data-path="'+el.getAttribute("data-path")+'"]';
+    else if(el.hasAttribute("data-row")) info.selector='[data-row="'+el.getAttribute("data-row")+'"][data-id="'+el.getAttribute("data-id")+'"][data-field="'+el.getAttribute("data-field")+'"]';
+    return info;
+  }
+  function restoreFocus(info){
+    if(!info||!info.selector) return;
+    var el=root.querySelector(info.selector); if(!el) return; el.focus();
+    try{ if(typeof info.ss==="number"&&el.setSelectionRange) el.setSelectionRange(info.ss,info.se); }catch(e){}
+  }
 
-/* ================= APP ROOT ================= */
-function App() {
-  const [active, setActive] = useState("input");
-  const [customers, setCustomers] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [range, setRange] = useState("all");
-  const [toast, setToast] = useState(null);
-  const [fbConnected, setFbConnected] = useState(false);
-  const saveTimer = useRef(null);
-  const isRemoteUpdate = useRef(false);
+  function render(){
+    var fi=captureFocus();
+    if(state.loading){ root.innerHTML='<div class="loading-screen"><div class="spinner"></div><p style="color:#6B7280;font-size:14px;margin-top:16px;font-weight:500">Đang kết nối Máy chủ Đám mây…</p></div>'; return; }
+    var t=state.activeTab, h=renderHeader()+renderTabs()+'<div id="tab-content">';
+    if(t==="overview") h+=renderOverview(); else if(t==="customers") h+=renderCustomers();
+    h+='</div>'; root.innerHTML=h; attachHandlers(); restoreFocus(fi);
+  }
 
-  const notify = useCallback((message, type = "info") => setToast({ message, type, key: Date.now() }), []);
+  function attachHandlers(){
+    var sb=document.getElementById("sync-btn");
+    if(sb) sb.addEventListener("click",function(){ state.syncState="loading"; render(); setTimeout(function(){ state.syncState="synced"; state.lastSynced=new Date(); render(); },400); });
 
-  useEffect(() => {
-    setLoaded(true); // hiện UI ngay, không chờ mạng — Firebase kết nối ngầm phía sau
-    let unsub = null;
-    (async () => {
-      const ok = await waitForFirebase(3000);
-      if (!ok || !window.__firebase) {
-        notify("Không kết nối được Firebase — kiểm tra lại cấu hình hoặc kết nối mạng", "error");
-        return;
-      }
-      setFbConnected(true);
-      unsub = window.__firebase.onCustomers((data) => {
-        isRemoteUpdate.current = true;
-        if (!data) { setCustomers([]); }
-        else {
-          // Firebase trả object {id: record} hoặc array — chuẩn hoá về array
-          const list = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
-          setCustomers(list);
-        }
-      });
-    })();
-    return () => { if (unsub) unsub(); };
-  }, []);
+    root.querySelectorAll("[data-tab]").forEach(function(btn){ btn.addEventListener("click",function(e){ var t=e.currentTarget.getAttribute("data-tab"); if(t) setTab(t); }); });
 
-  useEffect(() => {
-    if (!loaded || !fbConnected) return;
-    if (isRemoteUpdate.current) { isRemoteUpdate.current = false; return; } // dữ liệu vừa nhận từ Firebase, không ghi lại
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveCustomers(customers), 400);
-  }, [customers, loaded, fbConnected]);
+    var aiBtn = document.getElementById("ai-btn"); if (aiBtn) aiBtn.addEventListener("click", processCustomerWithAI);
+    var micBtn = document.getElementById("mic-btn"); if (micBtn) micBtn.addEventListener("click", startSpeechRecognition);
+    var fileInput = document.getElementById("ai-file");
+    if (fileInput) fileInput.addEventListener("change", function() { if(this.files[0]) document.getElementById("ai-status").innerHTML = `📸 File: <b>${this.files[0].name}</b>. Đã sẵn sàng phân tích Note!`; });
+    var aiInput = document.getElementById("ai-input"); if (aiInput) aiInput.addEventListener("keypress", function(e) { if(e.key === "Enter") processCustomerWithAI(); });
 
-  const pageTitles = {
-    input: ["Nhập liệu", "Thêm khách hàng mới hoặc nhập từ file Excel/CSV"],
-    dashboard: ["Dashboard tổng quan", "Theo dõi sức khoẻ pipeline CRM & Cisco theo thời gian thực"],
-    trends: ["Phân tích xu hướng", "Diễn biến nhu cầu khách hàng qua các tháng/quý"],
-    deepdive: ["Deep-dive vấn đề", "Đào sâu nguyên nhân mất khách, deal bị đứng, và chi tiết từng bản ghi"],
-    ai: ["Gợi ý từ AI", "Phân tích ghi chú nhu cầu tiếng Việt để tìm pain points và ý tưởng"]
-  };
-  const [title, sub] = pageTitles[active];
+    var acb=document.getElementById("add-customer-btn"); if(acb) acb.addEventListener("click",function(){ 
+      const d = new Date(); const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+      addRow("customers",function(){ return {id:uid(),date:todayStr,company:"",industry:INDUSTRIES[0],product:PRODUCTS[1],stage:STAGES[0],value:0,note:""}; }); 
+      setTab("customers");
+    });
 
-  return (
-    <div className="app-shell">
-      <Sidebar active={active} setActive={setActive} count={customers.length} />
-      <div className="main">
-        <div className="topbar">
-          <div><h1>{title}</h1><p>{sub}</p></div>
-          <div className={"pill " + (fbConnected ? "pill-teal" : "pill-amber")}>● {fbConnected ? "Đồng bộ Firebase — realtime" : "Chưa kết nối Firebase"}</div>
-        </div>
-        <div className="content">
-          {!loaded ? (
-            <div className="empty-state"><span className="loader-dot"></span> Đang tải dữ liệu…</div>
-          ) : (
-            <>
-              {active === "input" && <InputPage customers={customers} setCustomers={setCustomers} notify={notify} />}
-              {active === "dashboard" && <DashboardPage customers={customers} range={range} setRange={setRange} />}
-              {active === "trends" && <TrendsPage customers={customers} range={range} setRange={setRange} />}
-              {active === "deepdive" && <DeepDivePage customers={customers} />}
-              {active === "ai" && <AIPage customers={customers} notify={notify} />}
-            </>
-          )}
-        </div>
-      </div>
-      {toast && <Toast key={toast.key} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </div>
-  );
-}
+    root.querySelectorAll("[data-path]").forEach(function(el){ el.addEventListener("blur",function(){ var val=el.getAttribute("data-type")==="number"?(parseInt(String(el.value).replace(/[^\d-]/g,""))||0):el.value; updatePath(el.getAttribute("data-path").split("."),val); }); });
+    root.querySelectorAll("[data-row]").forEach(function(el){ if(el.type==="checkbox") return; var commit=function(){ var val=el.getAttribute("data-type")==="number"?(parseInt(String(el.value).replace(/[^\d-]/g,""))||0):el.value; updateRow(el.getAttribute("data-row"),el.getAttribute("data-id"),el.getAttribute("data-field"),val); }; el.addEventListener(el.tagName==="SELECT"||el.type==="date"?"change":"blur",commit); });
+    root.querySelectorAll("[data-remove]").forEach(function(btn){ btn.addEventListener("click",function(){ removeRow(btn.getAttribute("data-remove"),btn.getAttribute("data-id")); }); });
+  }
 
-try {
-  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  document.getElementById("root").dataset.mounted = "true";
-} catch (e) {
-  console.error(e);
-  document.getElementById("root").innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0B1320;color:#EAF1FB;font-family:sans-serif;padding:24px;text-align:center;"><div><div style="font-size:15px;font-weight:600;margin-bottom:8px;">Lỗi khi khởi chạy ứng dụng</div><div style="font-size:13px;color:#AEC0DC;">' + (e && e.message) + '</div></div></div>';
-}
-</script>
-<script>
-  // Firebase được nạp hoàn toàn bất đồng bộ SAU khi UI đã hiển thị, không làm chậm thời điểm xem trang.
-  (async () => {
-    try {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-      const { getDatabase, ref, onValue, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyCpAeL2TtXUV4YFFd22M3Zeu2Q6ZFRDVCg",
-        authDomain: "cisco-crm.firebaseapp.com",
-        databaseURL: "https://cisco-crm-default-rtdb.asia-southeast1.firebasedatabase.app/",
-        projectId: "cisco-crm",
-        storageBucket: "cisco-crm.firebasestorage.app",
-        messagingSenderId: "983212214414",
-        appId: "1:983212214414:web:9f57f8fba8cdf2c8e621df"
-      };
-
-      const fbApp = initializeApp(firebaseConfig);
-      const fbDb = getDatabase(fbApp);
-      const CUSTOMERS_REF = ref(fbDb, "customers");
-      const AI_CACHE_REF = ref(fbDb, "ai_insights_cache");
-
-      window.__firebase = {
-        ready: true,
-        onCustomers: (cb) => onValue(CUSTOMERS_REF, (snap) => cb(snap.val())),
-        saveCustomers: (list) => set(CUSTOMERS_REF, list),
-        onAICache: (cb) => onValue(AI_CACHE_REF, (snap) => cb(snap.val())),
-        saveAICache: (obj) => set(AI_CACHE_REF, obj),
-      };
-    } catch (err) {
-      console.error("Lỗi nạp Firebase:", err);
-    } finally {
-      window.dispatchEvent(new Event("firebase-ready"));
-    }
-  })();
+  render();
+})();
 </script>
 </body>
 </html>
