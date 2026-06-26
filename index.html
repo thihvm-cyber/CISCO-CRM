@@ -271,7 +271,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     h+='<div class="card-title"><span class="card-title-dot dot-teal"></span>Nhập liệu thông tin Sale B2B</div>';
     
     h+='<div style="display:flex; flex-direction:column; gap:10px;">';
-    h+='<textarea id="ai-input" placeholder="Nói hoặc paste văn bản vào đây... (Ví dụ: Báo giá 150 củ cho Vietjet, email nhansu@vietjet.com, sđt 0901234567)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-md); font-family:inherit; font-size:13px; resize:vertical; min-height:60px;" rows="2"></textarea>';
+    h+='<textarea id="ai-input" placeholder="Nói hoặc paste văn bản vào đây... (Ví dụ: Báo giá 150 củ cho Vietjet ngày 28/06, email abc@vietjet.com, sđt 0901234567)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-md); font-family:inherit; font-size:13px; resize:vertical; min-height:60px;" rows="2"></textarea>';
     
     h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
     h+='<button id="mic-btn" type="button" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-family:inherit; font-size:13px; min-width:110px; justify-content:center;">🎙️ Nói</button>';
@@ -307,10 +307,22 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       h+='<tr><td colspan="10" style="text-align:center; padding: 3rem 1rem; color:var(--gray);">Chưa có dữ liệu khách hàng. Chuyển sang tab Tổng quan để thêm.</td></tr>';
     }
 
-    var sorted = clone(data.customers).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+    // HÀM SẮP XẾP CHUYÊN DỤNG CHO NGÀY ĐỊNH DẠNG IATA (VD: 28JUN26)
+    function parseCustomDate(dStr) {
+      if(!dStr) return 0;
+      var m = String(dStr).match(/(\d{2})([A-Z]{3})(\d{2})/i);
+      if(m) {
+        var ms = {"JAN":0,"FEB":1,"MAR":2,"APR":3,"MAY":4,"JUN":5,"JUL":6,"AUG":7,"SEP":8,"OCT":9,"NOV":10,"DEC":11};
+        return new Date(2000 + parseInt(m[3]), ms[m[2].toUpperCase()] || 0, parseInt(m[1])).getTime();
+      }
+      return new Date(dStr).getTime();
+    }
+
+    var sorted = clone(data.customers).sort(function(a,b){ return parseCustomDate(b.date) - parseCustomDate(a.date); });
 
     sorted.forEach(function(c){
-      h+='<tr><td style="padding-left:1.25rem;"><input type="date" data-row="customers" data-id="'+c.id+'" data-field="date" value="'+esc(c.date)+'" style="width:125px;font-size:12px;" /></td>';
+      // ĐỔI INPUT TỪ TYPE="DATE" SANG TYPE="TEXT" ĐỂ HIỂN THỊ ĐƯỢC CHỮ (VD: 28JUN26)
+      h+='<tr><td style="padding-left:1.25rem;"><input type="text" data-row="customers" data-id="'+c.id+'" data-field="date" value="'+esc(c.date).toUpperCase()+'" placeholder="DDMMMYY" style="width:85px;font-size:12px;font-weight:600;text-transform:uppercase;text-align:center;" /></td>';
       h+='<td><input class="needs-fill" data-row="customers" data-id="'+c.id+'" data-field="company" value="'+esc(c.company)+'" placeholder="Tên công ty" style="min-width:140px; font-weight:600;" /></td>';
       h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="phone" value="'+esc(c.phone)+'" placeholder="Số điện thoại" style="min-width:110px;" /></td>';
       h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="email" value="'+esc(c.email)+'" placeholder="Email" style="min-width:140px;" /></td>';
@@ -324,14 +336,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     
     h+='</tbody></table></div></div>';
     return h;
-  }
-
-  function fileToGenerativePart(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve({ inlineData: { data: reader.result.split(',')[1], mimeType: file.type } });
-      reader.readAsDataURL(file);
-    });
   }
 
   async function processCustomerWithAI() {
@@ -348,15 +352,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
     const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài. Hãy đọc thông tin văn bản và bóc tách dữ liệu thành DUY NHẤT một khối JSON (không dùng backticks \`\`\`json, không code block). 
     Nếu thiếu trường nào, hãy tự động điền theo các chuẩn sau:
-    - "date": Lấy ngày hôm nay (YYYY-MM-DD).
-    - "company": Trích xuất tên công ty/ngân hàng. Nếu quá ngắn, lấy nguyên văn từ khóa của người dùng.
+    - "date": Lấy ngày trong văn bản (chuyển sang định dạng DDMMMYY, VD: 28JUN26). Nếu không có ngày, lấy ngày hôm nay.
+    - "company": Trích xuất tên công ty/ngân hàng. Nếu quá ngắn, lấy nguyên văn từ khóa.
     - "phone": Trích xuất số điện thoại (nếu có). Nếu không, để rỗng "".
     - "email": Trích xuất địa chỉ email (nếu có). Nếu không, để rỗng "".
     - "industry": Chọn 1 ngành: ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"].
     - "product": Chọn 1 sản phẩm: ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"].
     - "stage": Chọn 1 giai đoạn: ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"].
     - "value": Giá trị hợp đồng (số nguyên). Nếu không rõ, điền 0.
-    - "note": Bê nguyên văn 100% câu lệnh/mô tả gốc của người dùng vào đây.`;
+    - "note": Bê nguyên văn 100% câu lệnh/mô tả gốc vào đây.`;
 
     parts.push({ text: prompt });
     parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
@@ -377,7 +381,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       const parsed = JSON.parse(jsonMatch[0]);
 
       const d = new Date();
-      const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+      const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const todayStr = String(d.getDate()).padStart(2, '0') + monthNames[d.getMonth()] + String(d.getFullYear()).slice(-2);
 
       addRow("customers", function() {
         return { 
@@ -496,7 +501,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     var aiBtn = document.getElementById("ai-btn"); if (aiBtn) aiBtn.addEventListener("click", processCustomerWithAI);
     var micBtn = document.getElementById("mic-btn"); if (micBtn) micBtn.addEventListener("click", toggleSpeechRecognition);
 
-    // LUỒNG TỰ ĐỘNG ĐIỀN FORM BẰNG ÁNH XẠ TỪ KHÓA NỘI BỘ (KHÔNG QUA AI)
     var quickAddBtn = document.getElementById("quick-add-btn");
     if (quickAddBtn) quickAddBtn.addEventListener("click", function() {
       var inputEl = document.getElementById("ai-input");
@@ -510,12 +514,31 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
       var t = text.toLowerCase();
 
-      // BÓC TÁCH EMAIL (Regex bắt địa chỉ email)
+      // BÓC TÁCH NGÀY THÁNG (Format Hàng không: 28JUN26)
+      var parsedDate = "";
+      var monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      var dateMatch = text.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
+      if (dateMatch) {
+          var dDay = dateMatch[1].padStart(2, '0');
+          var dMonth = parseInt(dateMatch[2], 10);
+          var dYear = dateMatch[3] ? dateMatch[3].slice(-2) : String(new Date().getFullYear()).slice(-2);
+          if (dMonth >= 1 && dMonth <= 12) {
+              parsedDate = dDay + monthNames[dMonth - 1] + dYear;
+          }
+      }
+      
+      // Nếu không đọc ngày, tự động gán ngày hôm nay
+      if (!parsedDate) {
+          const d = new Date();
+          parsedDate = String(d.getDate()).padStart(2, '0') + monthNames[d.getMonth()] + String(d.getFullYear()).slice(-2);
+      }
+
+      // BÓC TÁCH EMAIL
       var parsedEmail = "";
       var emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
       if (emailMatch) parsedEmail = emailMatch[0];
 
-      // BÓC TÁCH ĐIỆN THOẠI NÂNG CẤP (Xử lý dứt điểm chuỗi số dính liền 10-11 số)
+      // BÓC TÁCH ĐIỆN THOẠI 
       var parsedPhone = "";
       var phoneMatch = text.match(/\b(0\d{9,10})\b/) || text.match(/(0\d{1,4}[\s\.-]?\d{3,4}[\s\.-]?\d{3,4})/);
       if (phoneMatch) parsedPhone = phoneMatch[0].replace(/[\s\.-]/g, '');
@@ -579,42 +602,38 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           else if (unit === 'ngàn' || unit === 'k') parsedVal = num * 1000;
       }
 
-      // CẮT TỈA LOẠI TRỪ TỪ RÁC ĐỂ TRÍCH XUẤT CHUẨN XÁC TÊN KHÁCH HÀNG
+      // CẮT TỈA LOẠI TRỪ TỪ RÁC ĐỂ TRÍCH XUẤT TÊN KHÁCH HÀNG
       var parsedComp = text;
       
-      // Gọt sạch email và sđt khỏi tên công ty trước
+      // Xóa các mảng đã nhận diện
       if (parsedEmail) parsedComp = parsedComp.replace(parsedEmail, '');
       if (phoneMatch) parsedComp = parsedComp.replace(phoneMatch[0], '');
+      if (dateMatch) parsedComp = parsedComp.replace(dateMatch[0], '');
       
-      // Gọt sạch các định dạng ngày tháng (Ví dụ: ngày 28/06, ngày 28-06, 28/06)
-      parsedComp = parsedComp.replace(/(ngày\s*)?\d{1,2}[\/\-]\d{1,2}/gi, '');
-      
-      // Khử rác hệ thống và các từ nối hành động nâng cấp
+      // Cắt bỏ cụm từ đệm
+      parsedComp = parsedComp.replace(/(vào ngày|ngày|lúc)?\s*\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?/gi, '');
       parsedComp = parsedComp.replace(/(sđt|số điện thoại|điện thoại|phone|email|mail)\s*:/gi, '');
       parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên)\s*:/gi, '');
       parsedComp = parsedComp.replace(/\d+(?:\.\d+)?\s*(triệu|củ|tỷ|ngàn|k)/gi, '');
       parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|ngân hàng|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
       parsedComp = parsedComp.replace(/(cả hai|cả 2|crm\s*\+\s*cisco|crm|cisco|tổng đài)/gi, '');
       parsedComp = parsedComp.replace(/(chốt deal|chốt|ký hợp đồng|ký|báo giá|gửi giá|demo|test|đàm phán|thương lượng|liên hệ|gọi lại|tiếp cận|mất khách|thua|fail|hủy|cần tư vấn|muốn tư vấn|tư vấn|quan tâm|hỏi về|mua|làm)/gi, '');
-      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên|là|cho|vừa|xong|đã|đang|muốn|cần|vào ngày|vào lúc|ngày|hôm nay|ngày mai)/gi, '');
+      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên|là|cho|vừa|xong|đã|đang|muốn|cần|hôm nay|ngày mai)/gi, '');
       
-      // Xử lý dọn dẹp các dấu phẩy, dấu chấm thừa do cắt tỉa để lại
+      // Dọn dẹp khoảng trắng
       parsedComp = parsedComp.replace(/,\s*,/g, ',');
       parsedComp = parsedComp.replace(/\s+/g, ' ').trim();
-      parsedComp = parsedComp.replace(/[\s,.-]+$/g, ''); // Cắt sạch rác ở cuối dòng
-      parsedComp = parsedComp.replace(/^[\s,.-]+/g, ''); // Cắt sạch rác ở đầu dòng
+      parsedComp = parsedComp.replace(/[\s,.-]+$/g, ''); 
+      parsedComp = parsedComp.replace(/^[\s,.-]+/g, ''); 
       
       if (!parsedComp) parsedComp = "Khách hàng mới";
       parsedComp = parsedComp.charAt(0).toUpperCase() + parsedComp.slice(1);
 
-      // Gửi bản ghi hoàn chỉnh lên Firebase
-      const d = new Date();
-      const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
-
+      // Lưu lên Firebase
       addRow("customers", function() {
         return { 
           id: uid(), 
-          date: todayStr, 
+          date: parsedDate, 
           company: parsedComp, 
           phone: parsedPhone,
           email: parsedEmail,
@@ -627,12 +646,16 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       });
 
       inputEl.value = ""; 
-      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công! Số ĐT & Email đã vào form chuẩn.</span>';
+      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công!</span>';
       setTimeout(function() { setTab("customers"); }, 800);
     });
 
+    // Nút Thêm khách hàng thủ công
     var acb=document.getElementById("add-customer-btn"); if(acb) acb.addEventListener("click",function(){ 
-      const d = new Date(); const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+      const d = new Date(); 
+      const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const todayStr = String(d.getDate()).padStart(2, '0') + monthNames[d.getMonth()] + String(d.getFullYear()).slice(-2);
+      
       addRow("customers",function(){ return {id:uid(),date:todayStr,company:"",phone:"",email:"",industry:INDUSTRIES[0],product:PRODUCTS[1],stage:STAGES[0],value:0,note:""}; }); 
       setTab("customers");
     });
