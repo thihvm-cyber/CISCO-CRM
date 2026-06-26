@@ -329,7 +329,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="industry" style="min-width:110px">'+selOpts(INDUSTRIES,c.industry)+'</select></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="product" style="min-width:130px">'+selOpts(PRODUCTS,c.product)+'</select></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" class="badge '+getStatusClass(c.stage)+'" style="width:130px; cursor:pointer; height:auto; padding:4px;">'+selOpts(STAGES,c.stage)+'</select></td>';
-      <td style="text-align:right"><input data-row="customers" data-id="'+c.id+'" data-field="value" data-type="number" value="'+(c.value||0)+'" style="min-width:100px;text-align:right;font-weight:600;color:#0369A1;" /></td>';
+      h+='<td style="text-align:right"><input data-row="customers" data-id="'+c.id+'" data-field="value" data-type="number" value="'+(c.value||0)+'" style="min-width:100px;text-align:right;font-weight:600;color:#0369A1;" /></td>';
       h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="note" value="'+esc(c.note)+'" placeholder="Ghi chú thêm" style="min-width:150px;" /></td>';
       h+='<td style="padding-right:1.25rem; text-align:right;"><button class="icon-btn" data-remove="customers" data-id="'+c.id+'">'+icon("trash")+'</button></td></tr>';
     });
@@ -497,7 +497,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
   function attachHandlers(){
     var sb=document.getElementById("sync-btn");
-    if(sb) sb.addEventListener("click",function(){ state.syncState="loading"; render(); setTimeout(function(){ state.syncState="synced"; state.lastSynced=new Date(); render(); },400); });
+    if(sb) sb.addEventListener("click/javascript",function(){ state.syncState="loading"; render(); setTimeout(function(){ state.syncState="synced"; state.lastSynced=new Date(); render(); },400); });
 
     root.querySelectorAll("[data-tab]").forEach(function(btn){ btn.addEventListener("click",function(e){ var t=e.currentTarget.getAttribute("data-tab"); if(t) setTab(t); }); });
 
@@ -659,7 +659,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       });
 
       inputEl.value = ""; 
-      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công! Đã tách form Người liên hệ & Ngày liên hệ chuẩn.</span>';
+      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công!</span>';
       setTimeout(function() { setTab("customers"); }, 800);
     });
 
