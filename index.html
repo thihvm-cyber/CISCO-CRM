@@ -560,15 +560,31 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           else if (unit === 'ngàn' || unit === 'k') parsedVal = num * 1000;
       }
 
-      // 5. Cắt tỉa loại trừ từ rác để trích xuất Tên khách hàng
+      // 5. CẮT TỈA LOẠI TRỪ TỪ RÁC ĐỂ TRÍCH XUẤT CHUẨN XÁC TÊN KHÁCH HÀNG
       var parsedComp = text;
+      
+      // Cắt dấu hai chấm nếu gõ theo format "Khách hàng: ", "Công ty: "
+      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|bên)\s*:/gi, '');
+      
+      // Cắt bớt phần số tiền
       parsedComp = parsedComp.replace(/\d+(?:\.\d+)?\s*(triệu|củ|tỷ|ngàn|k)/gi, '');
-      parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
-      parsedComp = parsedComp.replace(/(bán lẻ|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch)/gi, '');
-      parsedComp = parsedComp.replace(/(chốt deal|chốt|ký hợp đồng|ký|báo giá|demo|đàm phán|liên hệ|tiếp cận|mất khách|crm|cisco|tổng đài|cần tư vấn|tư vấn|muốn tư vấn|quan tâm|hỏi về)/gi, '');
-      parsedComp = parsedComp.replace(/(khách hàng|là|cho vđ|vừa|xong|đã)/gi, '');
+      
+      // Cắt bỏ cụm từ ngành nghề
+      parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|ngân hàng|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
+      
+      // Cắt bỏ các từ khóa sản phẩm
+      parsedComp = parsedComp.replace(/(cả hai|cả 2|crm\s*\+\s*cisco|crm|cisco|tổng đài)/gi, '');
+      
+      // Cắt bỏ từ khóa hành động, trạng thái (Bao gồm cả các từ tư vấn)
+      parsedComp = parsedComp.replace(/(chốt deal|chốt|ký hợp đồng|ký|báo giá|gửi giá|demo|test|đàm phán|thương lượng|liên hệ|gọi lại|tiếp cận|mất khách|thua|fail|hủy|cần tư vấn|muốn tư vấn|tư vấn|quan tâm|hỏi về|mua|làm)/gi, '');
+      
+      // Cắt bỏ các từ đệm, từ nối dư thừa
+      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên|là|cho|vừa|xong|đã|đang|muốn|cần)/gi, '');
+      
+      // Dọn dẹp khoảng trắng thừa
       parsedComp = parsedComp.replace(/\s+/g, ' ').trim();
       
+      // Xử lý viết hoa chữ cái đầu
       if (!parsedComp) parsedComp = "Khách hàng mới";
       parsedComp = parsedComp.charAt(0).toUpperCase() + parsedComp.slice(1);
 
