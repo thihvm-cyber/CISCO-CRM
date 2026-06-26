@@ -270,9 +270,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     h+='<div class="card card-teal" style="background: linear-gradient(135deg, #F0F9FF, #fff); border-color:#BAE6FD;">';
     h+='<div class="card-title"><span class="card-title-dot dot-teal"></span>Nhập liệu thông tin Sale B2B</div>';
     
-    // Đã thay thẻ input nhỏ thành Textarea lớn để dễ Copy/Paste nội dung dài
     h+='<div style="display:flex; flex-direction:column; gap:10px;">';
-    h+='<textarea id="ai-input" placeholder="Nói hoặc dán nội dung Text vào đây... (Ví dụ: Khách hàng Vingroup làm CRM chốt deal 150 triệu)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-md); font-family:inherit; font-size:13px; resize:vertical; min-height:60px;" rows="2"></textarea>';
+    h+='<textarea id="ai-input" placeholder="Nói hoặc paste văn bản vào đây... (Ví dụ: Báo giá 150 củ cho Vietjet, email nhansu@vietjet.com, sđt 0901234567)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-md); font-family:inherit; font-size:13px; resize:vertical; min-height:60px;" rows="2"></textarea>';
     
     h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
     h+='<button id="mic-btn" type="button" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-family:inherit; font-size:13px; min-width:110px; justify-content:center;">🎙️ Nói</button>';
@@ -302,10 +301,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   function renderCustomers(){
     var data=state.data, h='<div class="card card-purple" style="padding:0; overflow:hidden;">';
     h+='<div style="padding: 1.25rem;"><div class="card-title" style="margin:0;"><span class="card-title-dot dot-purple"></span>Danh sách Pipeline Khách hàng</div></div>';
-    h+='<div style="overflow-x:auto"><table style="font-size:13px;"><thead><tr><th style="padding-left:1.25rem;">Ngày</th><th>Khách hàng</th><th>Ngành</th><th>Sản phẩm</th><th>Trạng thái</th><th style="text-align:right">Giá trị (VND)</th><th>Ghi chú</th><th style="padding-right:1.25rem;"></th></tr></thead><tbody>';
+    // Đã bổ sung cột Điện thoại và Email
+    h+='<div style="overflow-x:auto"><table style="font-size:13px;"><thead><tr><th style="padding-left:1.25rem;">Ngày</th><th>Khách hàng</th><th>Điện thoại</th><th>Email</th><th>Ngành</th><th>Sản phẩm</th><th>Trạng thái</th><th style="text-align:right">Giá trị (VND)</th><th>Ghi chú</th><th style="padding-right:1.25rem;"></th></tr></thead><tbody>';
     
     if (data.customers.length === 0) {
-      h+='<tr><td colspan="8" style="text-align:center; padding: 3rem 1rem; color:var(--gray);">Chưa có dữ liệu khách hàng. Chuyển sang tab Tổng quan để thêm.</td></tr>';
+      h+='<tr><td colspan="10" style="text-align:center; padding: 3rem 1rem; color:var(--gray);">Chưa có dữ liệu khách hàng. Chuyển sang tab Tổng quan để thêm.</td></tr>';
     }
 
     var sorted = clone(data.customers).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
@@ -313,6 +313,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     sorted.forEach(function(c){
       h+='<tr><td style="padding-left:1.25rem;"><input type="date" data-row="customers" data-id="'+c.id+'" data-field="date" value="'+esc(c.date)+'" style="width:125px;font-size:12px;" /></td>';
       h+='<td><input class="needs-fill" data-row="customers" data-id="'+c.id+'" data-field="company" value="'+esc(c.company)+'" placeholder="Tên công ty" style="min-width:140px; font-weight:600;" /></td>';
+      h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="phone" value="'+esc(c.phone)+'" placeholder="Số điện thoại" style="min-width:110px;" /></td>';
+      h+='<td><input data-row="customers" data-id="'+c.id+'" data-field="email" value="'+esc(c.email)+'" placeholder="Email" style="min-width:140px;" /></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="industry" style="min-width:110px">'+selOpts(INDUSTRIES,c.industry)+'</select></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="product" style="min-width:130px">'+selOpts(PRODUCTS,c.product)+'</select></td>';
       h+='<td><select data-row="customers" data-id="'+c.id+'" data-field="stage" class="badge '+getStatusClass(c.stage)+'" style="width:130px; cursor:pointer; height:auto; padding:4px;">'+selOpts(STAGES,c.stage)+'</select></td>';
@@ -340,12 +342,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài. Hãy đọc thông tin văn bản và bóc tách dữ liệu thành DUY NHẤT một khối JSON (không dùng backticks \`\`\`json, không code block). 
     Nếu thiếu trường nào, hãy tự động điền theo các chuẩn sau:
     - "date": Lấy ngày hôm nay (YYYY-MM-DD).
-    - "company": Trích xuất tên công ty/ngân hàng. Nếu quá ngắn, hãy lấy nguyên văn câu hoặc từ khóa của người dùng.
+    - "company": Trích xuất tên công ty/ngân hàng. Nếu quá ngắn, lấy nguyên văn từ khóa của người dùng.
+    - "phone": Trích xuất số điện thoại (nếu có). Nếu không, để rỗng "".
+    - "email": Trích xuất địa chỉ email (nếu có). Nếu không, để rỗng "".
     - "industry": Chọn 1 ngành: ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"].
     - "product": Chọn 1 sản phẩm: ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"].
     - "stage": Chọn 1 giai đoạn: ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"].
-    - "value": Giá trị hợp đồng (số nguyên, ví dụ 150 triệu là 150000000). Nếu không rõ, điền 0.
-    - "note": Bê nguyên văn 100% câu lệnh/mô tả gốc của người dùng vào đây để lưu vết.`;
+    - "value": Giá trị hợp đồng (số nguyên). Nếu không rõ, điền 0.
+    - "note": Bê nguyên văn 100% câu lệnh/mô tả gốc của người dùng vào đây.`;
 
     parts.push({ text: prompt });
     parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
@@ -373,6 +377,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           id: uid(), 
           date: parsed.date || todayStr, 
           company: parsed.company || "Khách hàng mới", 
+          phone: parsed.phone || "",
+          email: parsed.email || "",
           industry: INDUSTRIES.includes(parsed.industry) ? parsed.industry : "Khác", 
           product: PRODUCTS.includes(parsed.product) ? parsed.product : "Cisco (Tổng đài)", 
           stage: STAGES.includes(parsed.stage) ? parsed.stage : "Tiếp cận", 
@@ -392,7 +398,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     }
   }
 
-  // BIẾN TOÀN CỤC ĐỂ QUẢN LÝ TRẠNG THÁI MIC
+  // BIẾN TOÀN CỤC QUẢN LÝ MIC NGHE LIÊN TỤC
   let recognition = null;
   let isRecording = false;
 
@@ -404,19 +410,18 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
     if (!SpeechRecognition) { statusEl.innerHTML = "❌ Trình duyệt không hỗ trợ Mic. Hãy sử dụng Chrome/Safari."; return; }
 
-    // Khởi tạo Mic nếu chưa có
     if (!recognition) {
         recognition = new SpeechRecognition();
         recognition.lang = "vi-VN";
-        recognition.continuous = true; // NGHE LIÊN TỤC KHÔNG TỰ NGẮT
-        recognition.interimResults = true; // ĐỔ CHỮ REAL-TIME
+        recognition.continuous = true; 
+        recognition.interimResults = true; 
 
         recognition.onstart = () => {
             isRecording = true;
             micBtn.style.background = "#FEE2E2"; micBtn.style.color = "#DC2626"; micBtn.style.borderColor = "#DC2626"; 
             micBtn.innerHTML = "🛑 Dừng nghe";
             statusEl.innerHTML = "🎙️ Đang nghe liên tục... Hãy nói thoải mái. Khi xong nhấn 'Dừng nghe'.";
-            inputEl.value = ""; // Xóa trắng ô text để bắt đầu ghi âm mới
+            inputEl.value = ""; 
         };
         
         recognition.onerror = () => { 
@@ -433,11 +438,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
             for (let i = 0; i < e.results.length; i++) {
                 fullText += e.results[i][0].transcript + " ";
             }
-            inputEl.value = fullText; // Đổ chữ liên tục vào ô Textarea
+            inputEl.value = fullText; 
         };
     }
 
-    // Hàm reset nút Mic
     function resetMic() { 
         isRecording = false;
         micBtn.style.background = "#fff"; micBtn.style.color = "#0284C7"; micBtn.style.borderColor = "#0284C7"; 
@@ -449,11 +453,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
         }
     }
 
-    // Xử lý logic Bật / Tắt chủ động
     if (isRecording) {
-        recognition.stop(); // Người dùng chủ động tắt
+        recognition.stop(); 
     } else {
-        recognition.start(); // Người dùng chủ động bật
+        recognition.start(); 
     }
   }
 
@@ -500,8 +503,18 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       }
 
       var t = text.toLowerCase();
+
+      // BÓC TÁCH EMAIL (Regex bắt địa chỉ email)
+      var parsedEmail = "";
+      var emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
+      if (emailMatch) parsedEmail = emailMatch[0];
+
+      // BÓC TÁCH ĐIỆN THOẠI (Regex bắt 10-11 số có thể chứa khoảng trắng/dấu chấm)
+      var parsedPhone = "";
+      var phoneMatch = text.match(/(0\d{2,3}[\s\.-]?\d{3}[\s\.-]?\d{3,4})/);
+      if (phoneMatch) parsedPhone = phoneMatch[0].replace(/[\s\.-]/g, '');
       
-      // 1. Ánh xạ Ngành nghề
+      // Ánh xạ Ngành nghề
       var parsedInd = "Khác";
       if (t.includes("bán lẻ") || t.includes("siêu thị") || t.includes("retail") || t.includes("shop")) {
           parsedInd = "Bán lẻ";
@@ -523,17 +536,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           parsedInd = "Du lịch";
       }
 
-      // 2. Ánh xạ Sản phẩm (Ưu tiên thiết lập mặc định theo ý muốn)
-      var parsedProd = "Cisco (Tổng đài)"; // Giá trị mặc định nếu không nhắc đến sản phẩm
+      // Ánh xạ Sản phẩm
+      var parsedProd = "Cisco (Tổng đài)";
       if (t.includes("cả hai") || t.includes("cả 2") || (t.includes("crm") && t.includes("cisco"))) {
           parsedProd = "CRM + Cisco";
       } else if (t.includes("crm")) {
           parsedProd = "CRM";
-      } else if (t.includes("cisco") || t.includes("tổng đài")) {
-          parsedProd = "Cisco (Tổng đài)";
       }
 
-      // 3. Ánh xạ Trạng thái
+      // Ánh xạ Trạng thái
       var parsedStage = "Tiếp cận";
       if (t.includes("chốt") || t.includes("ký") || t.includes("thành công") || t.includes("đạt")) {
           parsedStage = "Ký hợp đồng";
@@ -545,11 +556,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           parsedStage = "Demo";
       } else if (t.includes("đàm phán") || t.includes("thương lượng")) {
           parsedStage = "Đàm phán";
-      } else if (t.includes("liên hệ") || t.includes("gọi lại")) {
+      } else if (t.includes("liên hệ") || t.includes("gọi lại") || t.includes("tư vấn")) {
           parsedStage = "Liên hệ";
       }
 
-      // 4. Ánh xạ Số tiền
+      // Ánh xạ Số tiền
       var parsedVal = 0;
       var valMatch = t.match(/(\d+(?:\.\d+)?)\s*(triệu|củ|tỷ|ngàn|k)/);
       if (valMatch) {
@@ -560,35 +571,27 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           else if (unit === 'ngàn' || unit === 'k') parsedVal = num * 1000;
       }
 
-      // 5. CẮT TỈA LOẠI TRỪ TỪ RÁC ĐỂ TRÍCH XUẤT CHUẨN XÁC TÊN KHÁCH HÀNG
+      // Cắt tỉa loại trừ từ rác để trích xuất chuẩn xác Tên khách hàng
       var parsedComp = text;
       
-      // Cắt dấu hai chấm nếu gõ theo format "Khách hàng: ", "Công ty: "
-      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|bên)\s*:/gi, '');
+      // Gọt sạch email và sđt khỏi tên công ty
+      if (parsedEmail) parsedComp = parsedComp.replace(parsedEmail, '');
+      if (phoneMatch) parsedComp = parsedComp.replace(phoneMatch[0], '');
       
-      // Cắt bớt phần số tiền
+      parsedComp = parsedComp.replace(/(sđt|số điện thoại|điện thoại|phone|email|mail)\s*:/gi, '');
+      parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên)\s*:/gi, '');
       parsedComp = parsedComp.replace(/\d+(?:\.\d+)?\s*(triệu|củ|tỷ|ngàn|k)/gi, '');
-      
-      // Cắt bỏ cụm từ ngành nghề
       parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|ngân hàng|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
-      
-      // Cắt bỏ các từ khóa sản phẩm
       parsedComp = parsedComp.replace(/(cả hai|cả 2|crm\s*\+\s*cisco|crm|cisco|tổng đài)/gi, '');
-      
-      // Cắt bỏ từ khóa hành động, trạng thái (Bao gồm cả các từ tư vấn)
       parsedComp = parsedComp.replace(/(chốt deal|chốt|ký hợp đồng|ký|báo giá|gửi giá|demo|test|đàm phán|thương lượng|liên hệ|gọi lại|tiếp cận|mất khách|thua|fail|hủy|cần tư vấn|muốn tư vấn|tư vấn|quan tâm|hỏi về|mua|làm)/gi, '');
-      
-      // Cắt bỏ các từ đệm, từ nối dư thừa
       parsedComp = parsedComp.replace(/(khách hàng|khách|công ty|cty|doanh nghiệp|bên|là|cho|vừa|xong|đã|đang|muốn|cần)/gi, '');
       
-      // Dọn dẹp khoảng trắng thừa
       parsedComp = parsedComp.replace(/\s+/g, ' ').trim();
       
-      // Xử lý viết hoa chữ cái đầu
       if (!parsedComp) parsedComp = "Khách hàng mới";
       parsedComp = parsedComp.charAt(0).toUpperCase() + parsedComp.slice(1);
 
-      // 6. Gửi bản ghi hoàn chỉnh lên Firebase
+      // Gửi bản ghi hoàn chỉnh lên Firebase
       const d = new Date();
       const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
 
@@ -597,6 +600,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           id: uid(), 
           date: todayStr, 
           company: parsedComp, 
+          phone: parsedPhone,
+          email: parsedEmail,
           industry: parsedInd, 
           product: parsedProd, 
           stage: parsedStage, 
@@ -606,13 +611,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       });
 
       inputEl.value = ""; 
-      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Hệ thống đã tự phân tách Text và cập nhật thành công!</span>';
+      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Cập nhật KH thành công!</span>';
       setTimeout(function() { setTab("customers"); }, 800);
     });
 
     var acb=document.getElementById("add-customer-btn"); if(acb) acb.addEventListener("click",function(){ 
       const d = new Date(); const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
-      addRow("customers",function(){ return {id:uid(),date:todayStr,company:"",industry:INDUSTRIES[0],product:PRODUCTS[1],stage:STAGES[0],value:0,note:""}; }); 
+      addRow("customers",function(){ return {id:uid(),date:todayStr,company:"",phone:"",email:"",industry:INDUSTRIES[0],product:PRODUCTS[1],stage:STAGES[0],value:0,note:""}; }); 
       setTab("customers");
     });
 
