@@ -121,7 +121,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   };
   const fbApp = initializeApp(firebaseConfig);
   const db = getDatabase(fbApp);
-  // Đã đổi tên nhánh database để không đụng vào dữ liệu Tour Miền Trung
   const DATA_REF = ref(db, "cisco_crm_2026");
   window._fbSet = (data) => set(DATA_REF, data);
   window._fbOnValue = (cb) => onValue(DATA_REF, snap => cb(snap.val()));
@@ -130,8 +129,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
 <script>
 (function () {
-  // KHÓA API AQ ĐÃ CHỨNG MINH LÀ CHẠY MƯỢT
-  var GEMINI_API_KEY = "AQ.Ab8RN6KBnmHIb8suilaP7g914bhLojcDOhP925L-qLzCByPmxw";
+  // Dùng trực tiếp khóa cấu hình chuẩn của Firebase Project
+  var GEMINI_API_KEY = "AIzaSyDyPtbiBsvJRALiZSgTSbXnRvHkT5_7fW8";
 
   var INDUSTRIES = ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
   var PRODUCTS = ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"];
@@ -145,7 +144,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   }
 
   function vnd(n) { return (Number(n)||0).toLocaleString("vi-VN")+" ₫"; }
-  function fmtDate(iso) { if(!iso) return "—"; var p=iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
 
   function defaultData() {
     return {
@@ -270,7 +268,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     });
     h+='</div>';
 
-    // BỘ NHẬP LIỆU AI GEMINI (GIỮ NGUYÊN CORE TỪ TOUR)
     h+='<div class="card card-teal" style="background: linear-gradient(135deg, #F0F9FF, #fff); border-color:#BAE6FD;">';
     h+='<div class="card-title"><span class="card-title-dot dot-teal"></span>Trợ lý AI bóc tách thông tin Sale B2B</div>';
     h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
@@ -307,7 +304,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       h+='<tr><td colspan="8" style="text-align:center; padding: 3rem 1rem; color:var(--gray);">Chưa có dữ liệu khách hàng. Chuyển sang tab Tổng quan để thêm.</td></tr>';
     }
 
-    // Sort by date descending
     var sorted = clone(data.customers).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
 
     sorted.forEach(function(c){
@@ -342,21 +338,21 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     
     if (!text && !file) { statusEl.innerHTML = "❌ Hãy nhập câu lệnh hoặc đính hình ảnh ghi chú cuộc họp."; return; }
     document.getElementById("ai-btn").disabled = true;
-    statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Gemini Pro 1.5 đang bóc tách dữ liệu Sale...';
+    statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Trợ lý AI đang bóc tách ngầm...';
 
-    // ĐÂY LÀ ĐƯỜNG DẪN KẾT NỐI GEMINI HOẠT ĐỘNG CHUẨN XÁC TỪ FILE CŨ
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
     let parts = [];
 
-    const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài (Contact Center).
-    Hãy đọc ghi chú từ nhân viên kinh doanh (văn bản hoặc hình ảnh) và bóc tách thành DUY NHẤT một object JSON (không dùng backtick, không có code block định dạng):
-    - "date": Ngày tháng năm định dạng YYYY-MM-DD (mặc định lấy ngày hôm nay nếu không nhắc).
-    - "company": Tên công ty/khách hàng.
-    - "industry": Phải là 1 trong: ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"].
-    - "product": Phải là 1 trong: ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"].
-    - "stage": Phải là 1 trong: ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"].
-    - "value": Giá trị hợp đồng bằng số nguyên (ví dụ: 150 triệu thì ghi 150000000). Nếu chưa có thì để 0.
-    - "note": Ghi chú nội dung yêu cầu nổi bật của khách.`;
+    // Tinh chỉnh Prompt: AI tự điền các giá trị thiếu, quăng nguyên văn text vào note nếu không rõ ràng
+    const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài. Hãy đọc thông tin (văn bản hoặc ảnh ghi chú) và bóc tách dữ liệu thành DUY NHẤT một khối JSON (không dùng backticks \`\`\`json, không code block). 
+    Nếu thiếu trường nào, hãy tự động điền theo các chuẩn sau:
+    - "date": Lấy ngày hôm nay (YYYY-MM-DD).
+    - "company": Trích xuất tên công ty/ngân hàng. Nếu quá ngắn, hãy lấy nguyên văn câu hoặc từ khóa của người dùng.
+    - "industry": Chọn 1 ngành phù hợp: ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"]. Nếu không rõ, chọn "Khác".
+    - "product": Chọn 1 sản phẩm: ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"]. Nếu không rõ, chọn "Cisco (Tổng đài)".
+    - "stage": Chọn 1 giai đoạn: ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"]. Nếu không rõ, chọn "Tiếp cận".
+    - "value": Giá trị hợp đồng (số nguyên, ví dụ 150 triệu là 150000000). Nếu không rõ, điền 0.
+    - "note": Bê nguyên văn 100% câu lệnh/mô tả gốc của người dùng vào đây để lưu vết.`;
 
     parts.push({ text: prompt });
     if (text) parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
@@ -365,10 +361,19 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     try {
       const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: parts }] }) });
       const result = await response.json();
-      let cleanJson = result.candidates[0].content.parts[0].text.trim();
+
+      if (result.error) throw new Error("API Google từ chối: " + result.error.message);
+      if (!result.candidates || !result.candidates[0].content) throw new Error("AI trả về rỗng.");
+
+      let rawText = result.candidates[0].content.parts[0].text.trim();
       
-      if (cleanJson.startsWith("```")) { cleanJson = cleanJson.replace(/^```json|```$/g, "").trim(); }
-      const parsed = JSON.parse(cleanJson);
+      if (rawText.startsWith("```")) { rawText = rawText.replace(/^```json|```$/g, "").trim(); }
+      
+      // Bộ lọc bắt sống định dạng JSON, ngăn ngừa crash ứng dụng
+      let jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("AI không phản hồi định dạng biểu mẫu JSON.");
+      
+      const parsed = JSON.parse(jsonMatch[0]);
 
       const d = new Date();
       const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
@@ -381,7 +386,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           industry: INDUSTRIES.includes(parsed.industry) ? parsed.industry : "Khác", 
           product: PRODUCTS.includes(parsed.product) ? parsed.product : "Cisco (Tổng đài)", 
           stage: STAGES.includes(parsed.stage) ? parsed.stage : "Tiếp cận", 
-          value: parsed.value || 0, 
+          value: parseInt(parsed.value) || 0, 
           note: parsed.note || "" 
         };
       });
@@ -390,8 +395,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Phân tích thành công! Dữ liệu đã đẩy thẳng vào Pipeline Firebase.</span>';
     } catch (e) {
       console.error(e);
-      statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi: AI không bóc tách được. Vui lòng nói rõ hơn (Tên công ty, sản phẩm, ngành).</span>';
-    } finally { document.getElementById("ai-btn").disabled = false; }
+      statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi xử lý: ' + esc(e.message) + '</span>';
+    } finally { 
+      document.getElementById("ai-btn").disabled = false; 
+    }
   }
 
   function startSpeechRecognition() {
@@ -416,7 +423,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     recognition.onresult = (e) => {
       const resultText = e.results[0][0].transcript;
       inputEl.value = resultText;
-      statusEl.innerHTML = `✓ Đã bắt chữ: "${resultText}". Bấm <b>Xử lý ngay</b> để lên Cloud.`;
+      statusEl.innerHTML = `✓ Điền chữ: "${resultText}". Bấm <b>Xử lý ngay</b> để lên Cloud.`;
     };
 
     function resetMic() { micBtn.style.background = "#fff"; micBtn.style.color = "#0284C7"; micBtn.style.borderColor = "#0284C7"; micBtn.innerHTML = "🎙️ Nói"; }
