@@ -365,10 +365,12 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     try {
       const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: parts }] }) });
       const result = await response.json();
-      let cleanJson = result.candidates[0].content.parts[0].text.trim();
+      let rawText = result.candidates[0].content.parts[0].text;
       
-      if (cleanJson.startsWith("```")) { cleanJson = cleanJson.replace(/^```json|```$/g, "").trim(); }
-      const parsed = JSON.parse(cleanJson);
+      // Bắt chính xác đoạn ngoặc nhọn chứa JSON, mặc kệ AI lảm nhảm xung quanh
+      let jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("AI không trả về khối JSON");
+      const parsed = JSON.parse(jsonMatch[0]);
 
       const d = new Date();
       const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
