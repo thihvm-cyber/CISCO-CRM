@@ -129,7 +129,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
 <script>
 (function () {
-  // Dùng trực tiếp khóa chuẩn AIza... của Firebase Project để gọi Gemini API
+  // Khóa cấu hình chuẩn kết nối với mô hình Generative Language của Google
   var GEMINI_API_KEY = "AIzaSyDyPtbiBsvJRALiZSgTSbXnRvHkT5_7fW8";
 
   var INDUSTRIES = ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
@@ -273,10 +273,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
     h+='<input id="ai-input" placeholder="Nói yêu cầu... (VD: Vừa đi demo xong cho Mekong Retail, chốt deal 150 triệu)" style="flex:1; min-width:220px; padding:10px; border-radius:8px;" />';
     h+='<button id="mic-btn" type="button" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-family:inherit; font-size:13px;">🎙️ Nói</button>';
-    h+='<label for="ai-file" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-size:13px;">📷 Chụp Note</label>';
+    h+='<label for="ai-file" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-size:13px;">📸 Đính ảnh</label>';
     h+='<input type="file" id="ai-file" accept="image/*" style="display:none;" />';
     h+='<button id="ai-btn" style="cursor:pointer; background:#0284C7; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; font-family:inherit; font-size:13px;">Xử lý bằng AI</button>';
-    // NÚT CẬP NHẬT NHANH (KHÔNG QUA AI)
     h+='<button id="quick-add-btn" style="cursor:pointer; background:#10B981; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; font-family:inherit; font-size:13px; margin-left:8px;">+ Cập nhật KH</button>';
     h+='</div>';
     h+='<p id="ai-status" style="font-size:13px; color:var(--gray); margin-top:10px; font-weight:500;"></p>';
@@ -342,7 +341,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     document.getElementById("ai-btn").disabled = true;
     statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Trợ lý AI đang bóc tách ngầm...';
 
-    // ĐÃ CHUYỂN SANG MODEL FLASH ĐỂ NÉ LỖI BILLING GOOGLE CLOUD
+    // Gọi endpoint v1beta sử dụng model gemini-1.5-flash để áp dụng Free Tier nới lỏng
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     let parts = [];
 
@@ -464,7 +463,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     if (fileInput) fileInput.addEventListener("change", function() { if(this.files[0]) document.getElementById("ai-status").innerHTML = `📸 File: <b>${this.files[0].name}</b>. Đã sẵn sàng phân tích!`; });
     var aiInput = document.getElementById("ai-input"); if (aiInput) aiInput.addEventListener("keypress", function(e) { if(e.key === "Enter") processCustomerWithAI(); });
 
-    // LUỒNG XỬ LÝ NÚT CẬP NHẬT NHANH (BỎ QUA AI)
+    // LUỒNG TỰ ĐỘNG ĐIỀN FORM BẰNG ÁNH XẠ TỪ KHÓA NỘI BỘ (KHÔNG QUA AI)
     var quickAddBtn = document.getElementById("quick-add-btn");
     if (quickAddBtn) quickAddBtn.addEventListener("click", function() {
       var inputEl = document.getElementById("ai-input");
@@ -476,6 +475,78 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           return; 
       }
 
+      var t = text.toLowerCase();
+      
+      // 1. Ánh xạ Ngành nghề dựa vào từ khóa
+      var parsedInd = "Khác";
+      if (t.includes("bán lẻ") || t.includes("siêu thị") || t.includes("retail") || t.includes("shop")) {
+          parsedInd = "Bán lẻ";
+      } else if (t.includes("ngân hàng") || t.includes("tài chính") || t.includes("bank") || t.includes("bảo hiểm")) {
+          parsedInd = "Tài chính";
+      } else if (t.includes("bất động sản") || t.includes("nhà đất") || t.includes("bđs") || t.includes("đất nền")) {
+          parsedInd = "Bất động sản";
+      } else if (t.includes("sản xuất") || t.includes("nhà máy") || t.includes("xưởng")) {
+          parsedInd = "Sản xuất";
+      } else if (t.includes("logistics") || t.includes("vận tải") || t.includes("giao hàng") || t.includes("ship")) {
+          parsedInd = "Logistics";
+      } else if (t.includes("giáo dục") || t.includes("trường") || t.includes("trung tâm")) {
+          parsedInd = "Giáo dục";
+      } else if (t.includes("y tế") || t.includes("bệnh viện") || t.includes("phòng khám")) {
+          parsedInd = "Y tế";
+      } else if (t.includes("f&b") || t.includes("ăn uống") || t.includes("nhà hàng") || t.includes("quán")) {
+          parsedInd = "F&B";
+      } else if (t.includes("du lịch") || t.includes("tour") || t.includes("khách sạn") || t.includes("vé máy bay")) {
+          parsedInd = "Du lịch";
+      }
+
+      // 2. Ánh xạ Sản phẩm
+      var parsedProd = "Cisco (Tổng đài)";
+      if (t.includes("cả hai") || t.includes("cả 2") || (t.includes("crm") && t.includes("cisco"))) {
+          parsedProd = "CRM + Cisco";
+      } else if (t.includes("crm")) {
+          parsedProd = "CRM";
+      }
+
+      // 3. Ánh xạ Trạng thái (Giai đoạn Pipeline)
+      var parsedStage = "Tiếp cận";
+      if (t.includes("chốt") || t.includes("ký") || t.includes("thành công") || t.includes("đạt")) {
+          parsedStage = "Ký hợp đồng";
+      } else if (t.includes("mất") || t.includes("fail") || t.includes("hủy") || t.includes("thua")) {
+          parsedStage = "Mất khách";
+      } else if (t.includes("báo giá") || t.includes("gửi giá")) {
+          parsedStage = "Báo giá";
+      } else if (t.includes("demo") || t.includes("test")) {
+          parsedStage = "Demo";
+      } else if (t.includes("đàm phán") || t.includes("thương lượng")) {
+          parsedStage = "Đàm phán";
+      } else if (t.includes("liên hệ") || t.includes("gọi lại")) {
+          parsedStage = "Liên hệ";
+      }
+
+      // 4. Ánh xạ Số tiền (Giá trị hợp đồng)
+      var parsedVal = 0;
+      var valMatch = t.match(/(\d+(?:\.\d+)?)\s*(triệu|củ|tỷ|ngàn|k)/);
+      if (valMatch) {
+          var num = parseFloat(valMatch[1]);
+          var unit = valMatch[2];
+          if (unit === 'triệu' || unit === 'củ') parsedVal = num * 1000000;
+          else if (unit === 'tỷ') parsedVal = num * 1000000000;
+          else if (unit === 'ngàn' || unit === 'k') parsedVal = num * 1000;
+      }
+
+      // 5. Cắt tỉa loại trừ từ rác để trích xuất chuẩn xác Tên khách hàng
+      var parsedComp = text;
+      parsedComp = parsedComp.replace(/\d+(?:\.\d+)?\s*(triệu|củ|tỷ|ngàn|k)/gi, '');
+      parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
+      parsedComp = parsedComp.replace(/(bán lẻ|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch)/gi, '');
+      parsedComp = parsedComp.replace(/(chốt deal|chốt|ký hợp đồng|ký|báo giá|demo|đàm phán|liên hệ|tiếp cận|mất khách|crm|cisco|tổng đài)/gi, '');
+      parsedComp = parsedComp.replace(/(khách hàng|là|cho vđ|vừa|xong|đã)/gi, '');
+      parsedComp = parsedComp.replace(/\s+/g, ' ').trim();
+      
+      if (!parsedComp) parsedComp = "Khách hàng mới";
+      parsedComp = parsedComp.charAt(0).toUpperCase() + parsedComp.slice(1);
+
+      // 6. Gửi bản ghi hoàn chỉnh lên cơ sở dữ liệu Realtime
       const d = new Date();
       const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
 
@@ -483,17 +554,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
         return { 
           id: uid(), 
           date: todayStr, 
-          company: text.substring(0, 40) + (text.length > 40 ? "..." : ""), 
-          industry: INDUSTRIES[0], 
-          product: PRODUCTS[1], 
-          stage: STAGES[0], 
-          value: 0, 
+          company: parsedComp, 
+          industry: parsedInd, 
+          product: parsedProd, 
+          stage: parsedStage, 
+          value: parsedVal, 
           note: text 
         }; 
       });
 
       inputEl.value = ""; 
-      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Đã đẩy dữ liệu trực tiếp vào Pipeline! Hãy chỉnh sửa chi tiết ở tab bên.</span>';
+      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Hệ thống đã tự phân tách và cập nhật thành công!</span>';
       setTimeout(function() { setTab("customers"); }, 800);
     });
 
