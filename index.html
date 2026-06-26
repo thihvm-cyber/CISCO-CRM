@@ -129,7 +129,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
 <script>
 (function () {
-  // Khóa cấu hình chuẩn kết nối với mô hình Generative Language của Google
   var GEMINI_API_KEY = "AIzaSyDyPtbiBsvJRALiZSgTSbXnRvHkT5_7fW8";
 
   var INDUSTRIES = ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
@@ -270,14 +269,18 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
     h+='<div class="card card-teal" style="background: linear-gradient(135deg, #F0F9FF, #fff); border-color:#BAE6FD;">';
     h+='<div class="card-title"><span class="card-title-dot dot-teal"></span>Nhập liệu thông tin Sale B2B</div>';
+    
+    // Đã thay thẻ input nhỏ thành Textarea lớn để dễ Copy/Paste nội dung dài
+    h+='<div style="display:flex; flex-direction:column; gap:10px;">';
+    h+='<textarea id="ai-input" placeholder="Nói hoặc dán nội dung Text vào đây... (Ví dụ: Khách hàng Vingroup làm CRM chốt deal 150 triệu)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-md); font-family:inherit; font-size:13px; resize:vertical; min-height:60px;" rows="2"></textarea>';
+    
     h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
-    h+='<input id="ai-input" placeholder="Nói yêu cầu... (VD: Vừa đi demo xong cho Mekong Retail, chốt deal 150 triệu)" style="flex:1; min-width:220px; padding:10px; border-radius:8px;" />';
-    h+='<button id="mic-btn" type="button" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-family:inherit; font-size:13px;">🎙️ Nói</button>';
-    h+='<label for="ai-file" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-size:13px;">📸 Đính ảnh</label>';
-    h+='<input type="file" id="ai-file" accept="image/*" style="display:none;" />';
+    h+='<button id="mic-btn" type="button" style="cursor:pointer; background:#fff; border:1px solid #0284C7; padding:9px 14px; border-radius:8px; display:flex; align-items:center; color:#0284C7; font-weight:600; font-family:inherit; font-size:13px; min-width:110px; justify-content:center;">🎙️ Nói</button>';
     h+='<button id="ai-btn" style="cursor:pointer; background:#0284C7; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; font-family:inherit; font-size:13px;">Xử lý bằng AI</button>';
-    h+='<button id="quick-add-btn" style="cursor:pointer; background:#10B981; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; font-family:inherit; font-size:13px; margin-left:8px;">+ Cập nhật KH</button>';
+    h+='<button id="quick-add-btn" style="cursor:pointer; background:#10B981; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; font-family:inherit; font-size:13px;">+ Cập nhật KH</button>';
     h+='</div>';
+    h+='</div>';
+    
     h+='<p id="ai-status" style="font-size:13px; color:var(--gray); margin-top:10px; font-weight:500;"></p>';
     h+='</div>';
 
@@ -322,30 +325,19 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     return h;
   }
 
-  function fileToGenerativePart(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve({ inlineData: { data: reader.result.split(',')[1], mimeType: file.type } });
-      reader.readAsDataURL(file);
-    });
-  }
-
   async function processCustomerWithAI() {
     const inputEl = document.getElementById("ai-input");
-    const fileEl = document.getElementById("ai-file");
     const statusEl = document.getElementById("ai-status");
     const text = inputEl.value.trim();
-    const file = fileEl.files[0];
     
-    if (!text && !file) { statusEl.innerHTML = "❌ Hãy nhập câu lệnh hoặc đính hình ảnh ghi chú cuộc họp."; return; }
+    if (!text) { statusEl.innerHTML = "❌ Hãy nhập câu lệnh / paste text vào ô."; return; }
     document.getElementById("ai-btn").disabled = true;
     statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Trợ lý AI đang bóc tách ngầm...';
 
-    // Gọi endpoint v1beta sử dụng model gemini-1.5-flash để áp dụng Free Tier nới lỏng
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     let parts = [];
 
-    const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài. Hãy đọc thông tin (văn bản hoặc ảnh ghi chú) và bóc tách dữ liệu thành DUY NHẤT một khối JSON (không dùng backticks \`\`\`json, không code block). 
+    const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài. Hãy đọc thông tin văn bản và bóc tách dữ liệu thành DUY NHẤT một khối JSON (không dùng backticks \`\`\`json, không code block). 
     Nếu thiếu trường nào, hãy tự động điền theo các chuẩn sau:
     - "date": Lấy ngày hôm nay (YYYY-MM-DD).
     - "company": Trích xuất tên công ty/ngân hàng. Nếu quá ngắn, hãy lấy nguyên văn câu hoặc từ khóa của người dùng.
@@ -356,8 +348,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     - "note": Bê nguyên văn 100% câu lệnh/mô tả gốc của người dùng vào đây để lưu vết.`;
 
     parts.push({ text: prompt });
-    if (text) parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
-    if (file) { const imgData = await fileToGenerativePart(file); parts.push(imgData); }
+    parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
 
     try {
       const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: parts }] }) });
@@ -390,8 +381,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
         };
       });
 
-      inputEl.value = ""; fileEl.value = "";
-      statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Phân tích thành công! Dữ liệu đã đẩy vào Pipeline.</span>';
+      inputEl.value = ""; 
+      statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ AI Phân tích thành công! Dữ liệu đã đẩy vào Pipeline.</span>';
       setTimeout(function() { setTab("customers"); }, 1000);
     } catch (e) {
       console.error(e);
@@ -401,7 +392,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     }
   }
 
-  function startSpeechRecognition() {
+  // BIẾN TOÀN CỤC ĐỂ QUẢN LÝ TRẠNG THÁI MIC
+  let recognition = null;
+  let isRecording = false;
+
+  function toggleSpeechRecognition() {
     const micBtn = document.getElementById("mic-btn");
     const inputEl = document.getElementById("ai-input");
     const statusEl = document.getElementById("ai-status");
@@ -409,25 +404,57 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
     if (!SpeechRecognition) { statusEl.innerHTML = "❌ Trình duyệt không hỗ trợ Mic. Hãy sử dụng Chrome/Safari."; return; }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "vi-VN";
-    recognition.interimResults = false;
+    // Khởi tạo Mic nếu chưa có
+    if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = "vi-VN";
+        recognition.continuous = true; // NGHE LIÊN TỤC KHÔNG TỰ NGẮT
+        recognition.interimResults = true; // ĐỔ CHỮ REAL-TIME
 
-    recognition.onstart = () => {
-      micBtn.style.background = "#FEE2E2"; micBtn.style.color = "#DC2626"; micBtn.style.borderColor = "#DC2626"; micBtn.innerHTML = "🛑 Đang thu âm...";
-      statusEl.innerHTML = "🎙️ Đang nghe... Hãy nói rõ tên Công ty và giá trị deal.";
-    };
-    recognition.onerror = () => { statusEl.innerHTML = "❌ Lỗi ghi âm. Hãy kiểm tra lại quyền truy cập Mic."; resetMic(); };
-    recognition.onend = () => { resetMic(); };
-    
-    recognition.onresult = (e) => {
-      const resultText = e.results[0][0].transcript;
-      inputEl.value = resultText;
-      statusEl.innerHTML = `✓ Điền chữ: "${resultText}". Nhấn <b>+ Cập nhật KH</b> để đẩy nhanh lên Cloud.`;
-    };
+        recognition.onstart = () => {
+            isRecording = true;
+            micBtn.style.background = "#FEE2E2"; micBtn.style.color = "#DC2626"; micBtn.style.borderColor = "#DC2626"; 
+            micBtn.innerHTML = "🛑 Dừng nghe";
+            statusEl.innerHTML = "🎙️ Đang nghe liên tục... Hãy nói thoải mái. Khi xong nhấn 'Dừng nghe'.";
+            inputEl.value = ""; // Xóa trắng ô text để bắt đầu ghi âm mới
+        };
+        
+        recognition.onerror = () => { 
+            statusEl.innerHTML = "❌ Lỗi ghi âm. Hãy kiểm tra lại quyền truy cập Mic."; 
+            resetMic(); 
+        };
+        
+        recognition.onend = () => { 
+            resetMic(); 
+        };
+        
+        recognition.onresult = (e) => {
+            let fullText = "";
+            for (let i = 0; i < e.results.length; i++) {
+                fullText += e.results[i][0].transcript + " ";
+            }
+            inputEl.value = fullText; // Đổ chữ liên tục vào ô Textarea
+        };
+    }
 
-    function resetMic() { micBtn.style.background = "#fff"; micBtn.style.color = "#0284C7"; micBtn.style.borderColor = "#0284C7"; micBtn.innerHTML = "🎙️ Nói"; }
-    recognition.start();
+    // Hàm reset nút Mic
+    function resetMic() { 
+        isRecording = false;
+        micBtn.style.background = "#fff"; micBtn.style.color = "#0284C7"; micBtn.style.borderColor = "#0284C7"; 
+        micBtn.innerHTML = "🎙️ Nói"; 
+        if (inputEl.value.trim() !== "") {
+            statusEl.innerHTML = `✓ Đã thu âm xong. Nhấn <b>+ Cập nhật KH</b> để đẩy nhanh lên Cloud.`;
+        } else {
+            statusEl.innerHTML = "";
+        }
+    }
+
+    // Xử lý logic Bật / Tắt chủ động
+    if (isRecording) {
+        recognition.stop(); // Người dùng chủ động tắt
+    } else {
+        recognition.start(); // Người dùng chủ động bật
+    }
   }
 
   function captureFocus(){
@@ -458,10 +485,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     root.querySelectorAll("[data-tab]").forEach(function(btn){ btn.addEventListener("click",function(e){ var t=e.currentTarget.getAttribute("data-tab"); if(t) setTab(t); }); });
 
     var aiBtn = document.getElementById("ai-btn"); if (aiBtn) aiBtn.addEventListener("click", processCustomerWithAI);
-    var micBtn = document.getElementById("mic-btn"); if (micBtn) micBtn.addEventListener("click", startSpeechRecognition);
-    var fileInput = document.getElementById("ai-file");
-    if (fileInput) fileInput.addEventListener("change", function() { if(this.files[0]) document.getElementById("ai-status").innerHTML = `📸 File: <b>${this.files[0].name}</b>. Đã sẵn sàng phân tích!`; });
-    var aiInput = document.getElementById("ai-input"); if (aiInput) aiInput.addEventListener("keypress", function(e) { if(e.key === "Enter") processCustomerWithAI(); });
+    var micBtn = document.getElementById("mic-btn"); if (micBtn) micBtn.addEventListener("click", toggleSpeechRecognition);
 
     // LUỒNG TỰ ĐỘNG ĐIỀN FORM BẰNG ÁNH XẠ TỪ KHÓA NỘI BỘ (KHÔNG QUA AI)
     var quickAddBtn = document.getElementById("quick-add-btn");
@@ -471,13 +495,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       var text = inputEl.value.trim();
       
       if (!text) { 
-          statusEl.innerHTML = '<span style="color:#DC2626;">❌ Hãy nói hoặc gõ thông tin trước.</span>'; 
+          statusEl.innerHTML = '<span style="color:#DC2626;">❌ Hãy nói hoặc dán nội dung Text vào ô trước.</span>'; 
           return; 
       }
 
       var t = text.toLowerCase();
       
-      // 1. Ánh xạ Ngành nghề dựa vào từ khóa
+      // 1. Ánh xạ Ngành nghề
       var parsedInd = "Khác";
       if (t.includes("bán lẻ") || t.includes("siêu thị") || t.includes("retail") || t.includes("shop")) {
           parsedInd = "Bán lẻ";
@@ -499,15 +523,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           parsedInd = "Du lịch";
       }
 
-      // 2. Ánh xạ Sản phẩm
-      var parsedProd = "Cisco (Tổng đài)";
+      // 2. Ánh xạ Sản phẩm (Ưu tiên thiết lập mặc định theo ý muốn)
+      var parsedProd = "Cisco (Tổng đài)"; // Giá trị mặc định nếu không nhắc đến sản phẩm
       if (t.includes("cả hai") || t.includes("cả 2") || (t.includes("crm") && t.includes("cisco"))) {
           parsedProd = "CRM + Cisco";
       } else if (t.includes("crm")) {
           parsedProd = "CRM";
+      } else if (t.includes("cisco") || t.includes("tổng đài")) {
+          parsedProd = "Cisco (Tổng đài)";
       }
 
-      // 3. Ánh xạ Trạng thái (Giai đoạn Pipeline)
+      // 3. Ánh xạ Trạng thái
       var parsedStage = "Tiếp cận";
       if (t.includes("chốt") || t.includes("ký") || t.includes("thành công") || t.includes("đạt")) {
           parsedStage = "Ký hợp đồng";
@@ -523,7 +549,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           parsedStage = "Liên hệ";
       }
 
-      // 4. Ánh xạ Số tiền (Giá trị hợp đồng)
+      // 4. Ánh xạ Số tiền
       var parsedVal = 0;
       var valMatch = t.match(/(\d+(?:\.\d+)?)\s*(triệu|củ|tỷ|ngàn|k)/);
       if (valMatch) {
@@ -534,7 +560,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           else if (unit === 'ngàn' || unit === 'k') parsedVal = num * 1000;
       }
 
-      // 5. Cắt tỉa loại trừ từ rác để trích xuất chuẩn xác Tên khách hàng
+      // 5. Cắt tỉa loại trừ từ rác để trích xuất Tên khách hàng
       var parsedComp = text;
       parsedComp = parsedComp.replace(/\d+(?:\.\d+)?\s*(triệu|củ|tỷ|ngàn|k)/gi, '');
       parsedComp = parsedComp.replace(/(ngành|lĩnh vực)\s*(bán lẻ|tài chính|bất động sản|sản xuất|logistics|y tế|giáo dục|f&b|du lịch|khác)/gi, '');
@@ -546,7 +572,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       if (!parsedComp) parsedComp = "Khách hàng mới";
       parsedComp = parsedComp.charAt(0).toUpperCase() + parsedComp.slice(1);
 
-      // 6. Gửi bản ghi hoàn chỉnh lên cơ sở dữ liệu Realtime
+      // 6. Gửi bản ghi hoàn chỉnh lên Firebase
       const d = new Date();
       const todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
 
@@ -564,7 +590,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       });
 
       inputEl.value = ""; 
-      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Hệ thống đã tự phân tách và cập nhật thành công!</span>';
+      statusEl.innerHTML = '<span style="color:#10B981; font-weight:600;">✅ Hệ thống đã tự phân tách Text và cập nhật thành công!</span>';
       setTimeout(function() { setTab("customers"); }, 800);
     });
 
