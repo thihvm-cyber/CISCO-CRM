@@ -121,7 +121,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   };
   const fbApp = initializeApp(firebaseConfig);
   const db = getDatabase(fbApp);
-  // Đã đổi tên nhánh database để không đụng vào dữ liệu Tour Miền Trung
   const DATA_REF = ref(db, "cisco_crm_2026");
   window._fbSet = (data) => set(DATA_REF, data);
   window._fbOnValue = (cb) => onValue(DATA_REF, snap => cb(snap.val()));
@@ -130,7 +129,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 
 <script>
 (function () {
-  // KHÓA API AQ ĐÃ CHỨNG MINH LÀ CHẠY MƯỢT
   var GEMINI_API_KEY = "AQ.Ab8RN6KBnmHIb8suilaP7g914bhLojcDOhP925L-qLzCByPmxw";
 
   var INDUSTRIES = ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
@@ -145,7 +143,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   }
 
   function vnd(n) { return (Number(n)||0).toLocaleString("vi-VN")+" ₫"; }
-  function fmtDate(iso) { if(!iso) return "—"; var p=iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
 
   function defaultData() {
     return {
@@ -270,7 +267,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     });
     h+='</div>';
 
-    // BỘ NHẬP LIỆU AI GEMINI (GIỮ NGUYÊN CORE TỪ TOUR)
     h+='<div class="card card-teal" style="background: linear-gradient(135deg, #F0F9FF, #fff); border-color:#BAE6FD;">';
     h+='<div class="card-title"><span class="card-title-dot dot-teal"></span>Trợ lý AI bóc tách thông tin Sale B2B</div>';
     h+='<div style="display:flex; gap:8px; align-items: center; flex-wrap: wrap;">';
@@ -307,7 +303,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       h+='<tr><td colspan="8" style="text-align:center; padding: 3rem 1rem; color:var(--gray);">Chưa có dữ liệu khách hàng. Chuyển sang tab Tổng quan để thêm.</td></tr>';
     }
 
-    // Sort by date descending
     var sorted = clone(data.customers).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
 
     sorted.forEach(function(c){
@@ -368,15 +363,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: parts }] }) });
       const result = await response.json();
 
-      // Ép bắt lỗi thực tế nếu API Google có vấn đề
       if (result.error) throw new Error("API từ chối: " + result.error.message);
       if (!result.candidates || !result.candidates[0].content) throw new Error("AI trả về rỗng.");
 
       let rawText = result.candidates[0].content.parts[0].text;
       
-      // Kẹp cổ AI lấy đúng JSON
       let jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("AI không trả về JSON mà trả về: " + rawText.substring(0, 30) + "...");
+      if (!jsonMatch) throw new Error("Lỗi đọc dữ liệu AI. Vui lòng nói lại.");
       
       const parsed = JSON.parse(jsonMatch[0]);
 
@@ -400,18 +393,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
       statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Dữ liệu đã đẩy thẳng vào Pipeline Firebase.</span>';
     } catch (e) {
       console.error(e);
-      // Nếu lỗi, nó sẽ in thẳng màu đỏ với chữ "Lỗi hệ thống:"
       statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi hệ thống: ' + e.message + '</span>';
     } finally { 
       document.getElementById("ai-btn").disabled = false; 
     }
-  }
-      inputEl.value = ""; fileEl.value = "";
-      statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Phân tích thành công! Dữ liệu đã đẩy thẳng vào Pipeline Firebase.</span>';
-    } catch (e) {
-      console.error(e);
-      statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi: AI không bóc tách được. Vui lòng nói rõ hơn (Tên công ty, sản phẩm, ngành).</span>';
-    } finally { document.getElementById("ai-btn").disabled = false; }
   }
 
   function startSpeechRecognition() {
