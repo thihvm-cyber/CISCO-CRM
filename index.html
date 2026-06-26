@@ -122,14 +122,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
   const fbApp = initializeApp(firebaseConfig);
   const db = getDatabase(fbApp);
   const DATA_REF = ref(db, "cisco_crm_2026");
-  window._fbSet = (data) => set(DATA_REF, data);
-  window._fbOnValue = (cb) => onValue(DATA_REF, snap => cb(snap.val()));
+  window._fbSet = (data) => set(DATAREF, data);
+  window._fbOnValue = (cb) => onValue(DATAREF, snap => cb(snap.val()));
   window.dispatchEvent(new Event("firebase-ready"));
 </script>
 
 <script>
 (function () {
-  var GEMINI_API_KEY = "AQ.Ab8RN6KBnmHIb8suilaP7g914bhLojcDOhP925L-qLzCByPmxw";
+  // 🟢 TẬN DỤNG KHÓA CHUẨN ĐÃ ĐƯỢC XÁC THỰC BỞI FIREBASE
+  var GEMINI_API_KEY = "AIzaSyDyPtbiBsvJRALiZSgTSbXnRvHkT5_7fW8";
 
   var INDUSTRIES = ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"];
   var PRODUCTS = ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"];
@@ -335,41 +336,40 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
     const text = inputEl.value.trim();
     const file = fileEl.files[0];
     
-    if (!text && !file) { statusEl.innerHTML = "❌ Hãy nhập câu lệnh hoặc đính hình ảnh."; return; }
+    if (!text && !file) { statusEl.innerHTML = "❌ Hãy nhập câu lệnh hoặc đính hình ảnh ghi chú cuộc họp."; return; }
     document.getElementById("ai-btn").disabled = true;
-    statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Gemini đang xử lý...';
+    statusEl.innerHTML = '<span class="spin" style="display:inline-block; margin-right:5px;">⏳</span> Gemini Pro 1.5 đang bóc tách dữ liệu Sale...';
 
+    // 🟢 DÙNG ĐÚNG ENDPOINT V1BETA VÀ BẺ KHOÁ BẰNG KEY CHUẨN ĐƯỢC CUNG CẤP TRÊN FIREBASE
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
     let parts = [];
 
-    const prompt = `Bạn là trợ lý AI nhập liệu hệ thống CRM B2B. 
-    Mệnh lệnh tối cao: TRẢ VỀ DUY NHẤT 1 KHỐI JSON. KHÔNG giải thích, KHÔNG dùng markdown.
-    Dù người dùng chỉ nói 1 từ ngắn ngủi, bạn VẪN PHẢI xuất JSON. Các trường thiếu tự động điền mặc định theo chuẩn sau:
-    {
-      "date": "YYYY-MM-DD (mặc định lấy hôm nay)",
-      "company": "Tên công ty (Ví dụ: Tiền Phong Bank). Nếu không có, ghi 'Khách hàng mới'",
-      "industry": "Suy luận ngành (chỉ chọn: Bán lẻ, Tài chính, Bất động sản, Sản xuất, Logistics, Giáo dục, Y tế, F&B, Du lịch, Khác). Ví dụ: Bank/Ngân hàng -> Tài chính",
-      "product": "Chọn 1 trong: CRM, Cisco (Tổng đài), CRM + Cisco (mặc định lấy: Cisco (Tổng đài))",
-      "stage": "Chọn 1 trong: Tiếp cận, Liên hệ, Demo, Báo giá, Đàm phán, Ký hợp đồng, Mất khách (mặc định lấy: Tiếp cận)",
-      "value": Số tiền nguyên thủy (mặc định lấy 0),
-      "note": "Ghi chú các thông tin còn lại"
-    }`;
+    const prompt = `Bạn là Giám đốc Sale B2B quản lý phần mềm CRM và Tổng đài (Contact Center).
+    Mệnh lệnh tối cao: Đọc yêu cầu từ nhân viên kinh doanh, bóc tách và TRẢ VỀ DUY NHẤT một object JSON (không sử dụng định dạng code block, không có backticks \`\`\`json). Các trường thiếu tự động điền giá trị an toàn:
+    - "date": Ngày tháng năm định dạng YYYY-MM-DD (mặc định lấy ngày hôm nay).
+    - "company": Tên công ty/khách hàng. Nếu không rõ, ghi 'Khách hàng mới'.
+    - "industry": Phải chọn 1 trong: ["Bán lẻ", "Tài chính", "Bất động sản", "Sản xuất", "Logistics", "Giáo dục", "Y tế", "F&B", "Du lịch", "Khác"].
+    - "product": Phải chọn 1 trong: ["CRM", "Cisco (Tổng đài)", "CRM + Cisco"].
+    - "stage": Phải chọn 1 trong: ["Tiếp cận", "Liên hệ", "Demo", "Báo giá", "Đàm phán", "Ký hợp đồng", "Mất khách"].
+    - "value": Giá trị hợp đồng bằng số nguyên (ví dụ: 150 triệu thì ghi 150000000). Nếu chưa có thì để 0.
+    - "note": Ghi chú nội dung yêu cầu nổi bật của khách.`;
 
     parts.push({ text: prompt });
-    if (text) parts.push({ text: `Yêu cầu: "${text}"` });
+    if (text) parts.push({ text: `Ghi chú nhân viên Sale: "${text}"` });
     if (file) { const imgData = await fileToGenerativePart(file); parts.push(imgData); }
 
     try {
       const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: parts }] }) });
       const result = await response.json();
 
-      if (result.error) throw new Error("API từ chối: " + result.error.message);
+      if (result.error) throw new Error("API Google từ chối: " + result.error.message);
       if (!result.candidates || !result.candidates[0].content) throw new Error("AI trả về rỗng.");
 
-      let rawText = result.candidates[0].content.parts[0].text;
+      let rawText = result.candidates[0].content.parts[0].text.trim();
       
+      // 🟢 BỘ LỌC BẮT SỐNG JSON TRÁNH AI TRẢ LỜI LẢM NHẢM NGOÀI LỀ
       let jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Lỗi đọc dữ liệu AI. Vui lòng nói lại.");
+      if (!jsonMatch) throw new Error("AI không trả về biểu mẫu JSON hợp lệ.");
       
       const parsed = JSON.parse(jsonMatch[0]);
 
@@ -384,16 +384,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
           industry: INDUSTRIES.includes(parsed.industry) ? parsed.industry : "Khác", 
           product: PRODUCTS.includes(parsed.product) ? parsed.product : "Cisco (Tổng đài)", 
           stage: STAGES.includes(parsed.stage) ? parsed.stage : "Tiếp cận", 
-          value: parsed.value || 0, 
+          value: parseInt(parsed.value) || 0, 
           note: parsed.note || "" 
         };
       });
 
       inputEl.value = ""; fileEl.value = "";
-      statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Dữ liệu đã đẩy thẳng vào Pipeline Firebase.</span>';
+      statusEl.innerHTML = '<span style="color:#059669; font-weight:600;">✅ Phân tích thành công! Dữ liệu đã đẩy thẳng vào Pipeline Firebase.</span>';
     } catch (e) {
       console.error(e);
-      statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi hệ thống: ' + e.message + '</span>';
+      // 🟢 BỘ KẸP BẮT LỖI GỐC HIỂN THỊ THỰC TẾ TRÊN GIAO DIỆN
+      statusEl.innerHTML = '<span style="color:#DC2626;">❌ Lỗi bóc tách AI: ' + esc(e.message) + '</span>';
     } finally { 
       document.getElementById("ai-btn").disabled = false; 
     }
